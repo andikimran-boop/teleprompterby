@@ -26,7 +26,7 @@ textarea::placeholder{color:var(--muted)}
 input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer}
 .crow{display:flex;gap:8px;align-items:center;margin-top:6px}
-.cs{width:26px;height:26px;border-radius:6px;border:2px solid transparent;cursor:pointer;transition:border-color .15s}
+.cs{width:26px;height:26px;border-radius:6px;border:2px solid transparent;cursor:pointer}
 .cs.sel{border-color:var(--accent)}
 .brow{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .15s}
@@ -43,47 +43,59 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .tog::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
 .tog.on::after{transform:translateX(20px)}
 #ios-note{display:none;background:rgba(224,48,48,.15);border:1px solid rgba(224,48,48,.4);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.85rem;line-height:1.5;color:#ffaaaa}
-
-/* ══ SAVE NOTIFICATION ══ */
-#save-toast{
-  display:none;position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
-  background:#1a1a1a;border:1px solid var(--accent);border-radius:10px;
-  padding:14px 24px;color:var(--text);font-size:.9rem;z-index:999;
-  text-align:center;line-height:1.5;
-}
+#save-toast{display:none;position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid var(--accent);border-radius:10px;padding:14px 24px;color:var(--text);font-size:.9rem;z-index:999;text-align:center;line-height:1.5;white-space:nowrap}
 #save-toast.show{display:block}
 
 /* ══ RECORDER SCREEN ══ */
-#rec-screen{display:none;position:fixed;inset:0;z-index:300;background:#000}
+#rec-screen{display:none;position:fixed;inset:0;z-index:300;background:#000;overflow:hidden}
 #rec-screen.show{display:block}
-#webcam-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#webcam-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);pointer-events:none}
 
-/* ══ FLOAT BOX ══ */
+/* ══ FLOAT BOX — all 8 resize handles ══ */
 #fbox{
   position:absolute;
-  top:30px;left:50%;
-  width:580px;
+  top:20px; left:50%;
+  width:580px; height:300px;
   background:rgba(0,0,0,.82);
   backdrop-filter:blur(10px);
   border-radius:14px;
   border:1.5px solid rgba(255,255,255,.18);
-  display:flex;flex-direction:column;
-  min-width:240px;min-height:140px;
-  /* transform set inline so JS can reset it */
+  display:flex; flex-direction:column;
+  min-width:240px; min-height:140px;
+  /* JS will clear transform after first drag */
 }
 
-/* ── Row 1: drag bar + play controls ── */
+/* 8 resize handles around the box */
+.rh{position:absolute;z-index:20}
+/* edges */
+.rh-n {top:-4px;left:12px;right:12px;height:8px;cursor:n-resize}
+.rh-s {bottom:-4px;left:12px;right:12px;height:8px;cursor:s-resize}
+.rh-w {left:-4px;top:12px;bottom:12px;width:8px;cursor:w-resize}
+.rh-e {right:-4px;top:12px;bottom:12px;width:8px;cursor:e-resize}
+/* corners */
+.rh-nw{top:-4px;left:-4px;width:16px;height:16px;cursor:nw-resize;border-radius:4px 0 0 0}
+.rh-ne{top:-4px;right:-4px;width:16px;height:16px;cursor:ne-resize;border-radius:0 4px 0 0}
+.rh-sw{bottom:-4px;left:-4px;width:16px;height:16px;cursor:sw-resize;border-radius:0 0 0 4px}
+.rh-se{bottom:-4px;right:-4px;width:16px;height:16px;cursor:se-resize;border-radius:0 0 4px 0}
+/* visible SE grip indicator */
+.rh-se::after{
+  content:'';position:absolute;bottom:4px;right:4px;
+  width:10px;height:10px;
+  border-right:2.5px solid rgba(255,255,255,.55);
+  border-bottom:2.5px solid rgba(255,255,255,.55);
+  border-radius:0 0 2px 0;
+}
+.rh-se:hover::after{border-color:var(--accent)}
+
+/* top drag bar */
 #ftop{
-  display:flex;align-items:center;gap:8px;
-  padding:9px 12px;
+  display:flex;align-items:center;gap:8px;padding:9px 12px;
   background:rgba(255,255,255,.05);
-  border-radius:13px 13px 0 0;
+  border-radius:12px 12px 0 0;
   border-bottom:1px solid rgba(255,255,255,.08);
-  cursor:move;flex-shrink:0;
+  cursor:move; flex-shrink:0;
 }
-/* prevent drag when clicking buttons/sliders inside top bar */
-#ftop button, #ftop input{cursor:pointer;pointer-events:all}
-
+#ftop button,#ftop input{cursor:pointer;pointer-events:all}
 .ftb{
   width:36px;height:36px;border-radius:50%;
   border:1.5px solid rgba(255,255,255,.3);
@@ -91,89 +103,49 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   color:#fff;font-size:1rem;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:all .15s;flex-shrink:0;
-  -webkit-user-select:none;user-select:none;
 }
 .ftb:hover{background:rgba(255,255,255,.25)}
 .ftb.rcon{background:var(--red);border-color:var(--red);animation:rp 1.5s infinite}
 @keyframes rp{0%,100%{box-shadow:0 0 0 0 rgba(224,48,48,.5)}50%{box-shadow:0 0 0 8px rgba(224,48,48,0)}}
-
 .spdrow{display:flex;align-items:center;gap:6px;flex:1;min-width:80px;max-width:160px}
 .spdrow label{font-size:.65rem;color:rgba(255,255,255,.45);white-space:nowrap}
 .spdrow input{flex:1}
 .spdval{font-size:.65rem;color:var(--accent);font-weight:700;min-width:16px}
-
 #recdot{display:none;align-items:center;gap:4px;font-size:.68rem;font-weight:700;color:var(--red);letter-spacing:1px}
 #recdot.show{display:flex}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:rb 1s infinite}
 @keyframes rb{0%,100%{opacity:1}50%{opacity:.1}}
-#rtimer{font-family:'Space Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.4)}
+#rtimer{font-family:'Space Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.4);min-width:30px}
 
-/* ── Row 2: font size + align + mirror + guide ── */
+/* second bar: font + align + mirror + guide */
 #fbar2{
-  display:flex;align-items:center;gap:6px;padding:6px 12px;
+  display:flex;align-items:center;gap:5px;padding:6px 12px;
   background:rgba(0,0,0,.3);
   border-bottom:1px solid rgba(255,255,255,.06);
   flex-wrap:wrap;flex-shrink:0;
 }
-.bar2lbl{font-size:.62rem;color:rgba(255,255,255,.38);white-space:nowrap}
-.bar2val{font-size:.62rem;color:var(--accent);font-weight:700;min-width:28px}
-#ffs-range{width:70px;height:3px}
-#ffs-range::-webkit-slider-thumb{width:12px;height:12px}
+.b2l{font-size:.62rem;color:rgba(255,255,255,.38);white-space:nowrap}
+.b2v{font-size:.62rem;color:var(--accent);font-weight:700;min-width:28px}
+#ffs-r{width:70px;height:3px}
+#ffs-r::-webkit-slider-thumb{width:12px;height:12px}
 .sep{width:1px;height:18px;background:rgba(255,255,255,.12);margin:0 2px;flex-shrink:0}
-.tb2{
-  padding:3px 8px;border-radius:5px;
-  border:1px solid rgba(255,255,255,.2);
-  background:transparent;color:rgba(255,255,255,.5);
-  font-size:.72rem;cursor:pointer;
-  -webkit-user-select:none;user-select:none;
-  transition:all .15s;
-}
+.tb2{padding:3px 8px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.5);font-size:.72rem;cursor:pointer;transition:all .15s}
 .tb2:hover{background:rgba(255,255,255,.12);color:#fff}
 .tb2.on{background:rgba(240,165,0,.22);border-color:rgba(240,165,0,.7);color:var(--accent)}
 
-/* ── Script scroll area ── */
-#fscroll{overflow:hidden;position:relative;flex:1;min-height:80px;border-radius:0 0 12px 12px}
+/* script scroll */
+#fscroll{overflow:hidden;position:relative;flex:1;min-height:60px}
 #ftrack{padding:14px 18px 80px}
 #ftext{line-height:1.5;word-break:break-word;text-shadow:0 1px 10px rgba(0,0,0,.95);font-weight:500}
 #fguide{position:absolute;left:0;right:0;top:40%;height:2.5px;background:rgba(240,165,0,.7);pointer-events:none}
 
-/* ── Resize grip bottom-right ── */
-#fgrip{
-  position:absolute;
-  bottom:0;right:0;
-  width:28px;height:28px;
-  cursor:nwse-resize;
-  display:flex;align-items:flex-end;justify-content:flex-end;
-  padding:5px;z-index:20;border-radius:0 0 12px 0;
-}
-#fgrip::after{
-  content:'';
-  display:block;
-  width:12px;height:12px;
-  border-right:2.5px solid rgba(255,255,255,.5);
-  border-bottom:2.5px solid rgba(255,255,255,.5);
-  border-radius:0 0 3px 0;
-}
-#fgrip:hover::after{border-color:var(--accent)}
-
 /* countdown inside box */
-#cdo{
-  display:none;position:absolute;inset:0;
-  background:rgba(0,0,0,.7);z-index:30;
-  align-items:center;justify-content:center;
-  border-radius:12px;
-}
+#cdo{display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);z-index:30;align-items:center;justify-content:center;border-radius:12px}
 #cdo.show{display:flex}
-#cdn{font-family:'Space Mono',monospace;font-size:clamp(60px,12vw,120px);color:var(--accent);font-weight:700}
+#cdn{font-family:'Space Mono',monospace;font-size:clamp(50px,10vw,110px);color:var(--accent);font-weight:700}
 
-/* close button top-right of recorder screen */
-#rclose{
-  position:absolute;top:14px;right:14px;
-  width:40px;height:40px;border-radius:50%;
-  border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);
-  color:#fff;font-size:1.1rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;z-index:310;
-}
+/* close button */
+#rclose{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:310}
 
 /* ══ FULLSCREEN PROMPTER ══ */
 #pov{display:none;position:fixed;inset:0;z-index:200}
@@ -203,18 +175,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 #fchint{position:absolute;bottom:30px;font-size:.75rem;color:rgba(255,255,255,.2)}
 .sprow{display:flex;align-items:center;gap:10px;flex:1;min-width:130px}
 .sprow label{font-size:.72rem;color:rgba(255,255,255,.5);white-space:nowrap}
-
-@media(max-width:600px){
-  header{padding:10px 14px}.logo{font-size:.95rem}
-  .mode-tab{padding:5px 10px;font-size:.75rem}
-  main{padding:14px}.cgrid{grid-template-columns:1fr 1fr}
-  .btn{padding:10px 16px;font-size:.85rem}
-  #fbox{width:calc(100vw - 20px)!important}
-}
+@media(max-width:600px){header{padding:10px 14px}.logo{font-size:.95rem}.mode-tab{padding:5px 10px;font-size:.75rem}main{padding:14px}.cgrid{grid-template-columns:1fr 1fr}.btn{padding:10px 16px;font-size:.85rem}#fbox{width:calc(100vw - 24px)!important}}
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo">Prompter<span>Pro</span></div>
   <div class="mode-tabs">
@@ -222,31 +186,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <button class="mode-tab" onclick="swp('flash',this)">🃏 Flashcard</button>
   </div>
 </header>
-
 <main>
-  <textarea id="si" placeholder="Paste your script here...&#10;&#10;Scroll mode = smooth auto-scroll. Flashcard = show chunks one at a time."></textarea>
-  <div id="ios-note">⚠️ <strong>iPhone:</strong> Webcam recording not supported in Safari. Use Prompter Only and record with iPhone's screen recorder instead.</div>
-
-  <!-- SCROLL PANEL -->
+  <textarea id="si" placeholder="Paste your script here..."></textarea>
+  <div id="ios-note">⚠️ <strong>iPhone:</strong> Webcam recording not supported in Safari. Use Prompter Only and record with iPhone's screen recorder.</div>
   <div id="panel-scroll" class="panel active">
     <div class="cgrid">
-      <div class="cg">
-        <div class="cl">Font Size <span id="lfs">60px</span></div>
-        <input type="range" id="fsi" min="24" max="120" value="60" oninput="document.getElementById('lfs').textContent=this.value+'px'">
-      </div>
-      <div class="cg">
-        <div class="cl">Speed <span id="lsp">3</span></div>
-        <input type="range" id="spdi" min="1" max="15" value="3" oninput="document.getElementById('lsp').textContent=this.value">
-      </div>
-      <div class="cg">
-        <div class="cl">Text Color</div>
-        <div class="crow">
-          <div class="cs sel" style="background:#fff" data-c="#fff" onclick="stc(this)"></div>
-          <div class="cs" style="background:#f0a500" data-c="#f0a500" onclick="stc(this)"></div>
-          <div class="cs" style="background:#00ff88" data-c="#00ff88" onclick="stc(this)"></div>
-          <div class="cs" style="background:#ffff00" data-c="#ffff00" onclick="stc(this)"></div>
-        </div>
-      </div>
+      <div class="cg"><div class="cl">Font Size <span id="lfs">60px</span></div><input type="range" id="fsi" min="24" max="120" value="60" oninput="document.getElementById('lfs').textContent=this.value+'px'"></div>
+      <div class="cg"><div class="cl">Speed <span id="lsp">3</span></div><input type="range" id="spdi" min="1" max="15" value="3" oninput="document.getElementById('lsp').textContent=this.value"></div>
+      <div class="cg"><div class="cl">Text Color</div><div class="crow">
+        <div class="cs sel" style="background:#fff" data-c="#fff" onclick="stc(this)"></div>
+        <div class="cs" style="background:#f0a500" data-c="#f0a500" onclick="stc(this)"></div>
+        <div class="cs" style="background:#00ff88" data-c="#00ff88" onclick="stc(this)"></div>
+        <div class="cs" style="background:#ffff00" data-c="#ffff00" onclick="stc(this)"></div>
+      </div></div>
     </div>
     <div class="setsec">
       <div class="seth" onclick="tset()">⚙️ Options</div>
@@ -261,95 +213,80 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <button class="btn bo" onclick="document.getElementById('si').value=''">🗑 Clear</button>
     </div>
     <p style="font-size:.78rem;color:var(--muted);margin-top:6px;line-height:1.7">
-      <strong style="color:var(--text)">▶ Prompter Only</strong> — fullscreen scroll, no camera.<br>
-      <strong style="color:var(--text)">📹 Record with Camera</strong> — floating box over webcam. All controls on the box. Recording saves to your Downloads folder.
+      <strong style="color:var(--text)">📹 Record with Camera</strong> — Drag any edge or corner to resize the box. Recording saves to Downloads.
     </p>
   </div>
-
-  <!-- FLASHCARD PANEL -->
   <div id="panel-flash" class="panel">
     <div class="cgrid">
-      <div class="cg">
-        <div class="cl">Font Size <span id="lfcfs">56px</span></div>
-        <input type="range" id="fcfs" min="20" max="100" value="56" oninput="document.getElementById('lfcfs').textContent=this.value+'px'">
-      </div>
-      <div class="cg">
-        <div class="cl">Words per card <span id="lck">12</span></div>
-        <input type="range" id="cks" min="3" max="40" value="12" oninput="document.getElementById('lck').textContent=this.value">
-      </div>
+      <div class="cg"><div class="cl">Font Size <span id="lfcfs">56px</span></div><input type="range" id="fcfs" min="20" max="100" value="56" oninput="document.getElementById('lfcfs').textContent=this.value+'px'"></div>
+      <div class="cg"><div class="cl">Words per card <span id="lck">12</span></div><input type="range" id="cks" min="3" max="40" value="12" oninput="document.getElementById('lck').textContent=this.value"></div>
     </div>
-    <div class="brow" style="margin-top:16px">
-      <button class="btn bp" onclick="lfc()">🃏 Start Flashcards</button>
-    </div>
+    <div class="brow" style="margin-top:16px"><button class="btn bp" onclick="lfc()">🃏 Start Flashcards</button></div>
     <p style="margin-top:10px;font-size:.82rem;color:var(--muted)">Tap anywhere or ← → arrow keys to advance.</p>
   </div>
 </main>
 
-<!-- Save toast -->
-<div id="save-toast">💾 Recording saved to your <strong>Downloads</strong> folder.<br><span style="font-size:.8rem;color:var(--muted)">Look for a .webm or .mp4 file</span></div>
+<div id="save-toast">💾 Saved to <strong>Downloads</strong> as .webm / .mp4</div>
 
-<!-- ══════════════════════════════════════
-     RECORDER SCREEN
-══════════════════════════════════════ -->
+<!-- RECORDER SCREEN -->
 <div id="rec-screen">
   <video id="webcam-vid" autoplay muted playsinline></video>
-
-  <!-- Close button — outside fbox so always accessible -->
   <button id="rclose" onclick="clrec()">✕</button>
 
-  <!-- FLOAT BOX -->
   <div id="fbox" style="transform:translateX(-50%)">
+    <!-- 8 resize handles -->
+    <div class="rh rh-n"  data-dir="n"></div>
+    <div class="rh rh-s"  data-dir="s"></div>
+    <div class="rh rh-w"  data-dir="w"></div>
+    <div class="rh rh-e"  data-dir="e"></div>
+    <div class="rh rh-nw" data-dir="nw"></div>
+    <div class="rh rh-ne" data-dir="ne"></div>
+    <div class="rh rh-sw" data-dir="sw"></div>
+    <div class="rh rh-se" data-dir="se"></div>
 
-    <!-- ROW 1: controls -->
+    <!-- ROW 1 -->
     <div id="ftop">
-      <button class="ftb" id="btn-play" title="Play / Pause (Space)">▶</button>
-      <button class="ftb" id="btn-rst" title="Restart">↺</button>
+      <button class="ftb" id="btn-play">▶</button>
+      <button class="ftb" id="btn-rst">↺</button>
       <div class="spdrow">
         <label>Speed</label>
         <input type="range" id="rspd" min="1" max="15" value="3">
         <span class="spdval" id="rspdv">3</span>
       </div>
-      <button class="ftb" id="btn-rec" title="Start / Stop recording">⏺</button>
+      <button class="ftb" id="btn-rec">⏺</button>
       <div id="recdot"><div class="dot"></div>REC</div>
       <div id="rtimer">0:00</div>
     </div>
 
-    <!-- ROW 2: font + align + mirror + guide -->
+    <!-- ROW 2 -->
     <div id="fbar2">
-      <span class="bar2lbl">Size</span>
-      <input type="range" id="ffs-range" min="20" max="120" value="60">
-      <span class="bar2val" id="ffsv">60px</span>
+      <span class="b2l">Size</span>
+      <input type="range" id="ffs-r" min="20" max="120" value="60">
+      <span class="b2v" id="ffsv">60</span>
       <div class="sep"></div>
-      <button class="tb2 on" id="alL" title="Align left">L</button>
-      <button class="tb2" id="alC" title="Align center">C</button>
-      <button class="tb2" id="alR" title="Align right">R</button>
+      <button class="tb2 on" id="alL">L</button>
+      <button class="tb2" id="alC">C</button>
+      <button class="tb2" id="alR">R</button>
       <div class="sep"></div>
-      <button class="tb2" id="bmh" title="Mirror horizontal">⇔</button>
-      <button class="tb2" id="bmv" title="Mirror vertical">⇕</button>
+      <button class="tb2" id="bmh">⇔ H</button>
+      <button class="tb2" id="bmv">⇕ V</button>
       <div class="sep"></div>
-      <button class="tb2 on" id="bgd" title="Guide line">━ guide</button>
+      <button class="tb2 on" id="bgd">━ guide</button>
     </div>
 
-    <!-- SCRIPT TEXT -->
+    <!-- TEXT -->
     <div id="fscroll">
       <div id="fguide"></div>
       <div id="ftrack"><div id="ftext"></div></div>
     </div>
 
-    <!-- RESIZE GRIP — clearly visible bottom-right -->
-    <div id="fgrip" title="Drag to resize"></div>
-
-    <!-- Countdown overlay inside box -->
     <div id="cdo"><div id="cdn">3</div></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     FULLSCREEN PROMPTER
-══════════════════════════════════════ -->
+<!-- FULLSCREEN PROMPTER -->
 <div id="pov">
-  <div id="pbg"></div>
-  <div id="pguide"></div>
+  <div id="pbg"></div><div id="pguide"></div>
   <div id="pscroll"><div id="ptrack"><div id="ptext"></div></div></div>
   <div id="cdo2"><div id="cdn2">3</div></div>
   <div id="pctrls">
@@ -370,454 +307,298 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     FLASHCARD
-══════════════════════════════════════ -->
+<!-- FLASHCARD -->
 <div id="fcov" onclick="nfc()">
-  <div id="fcbar"></div>
-  <div id="fctxt"></div>
-  <div id="fcprog">1 / 1</div>
-  <div id="fchint">tap anywhere · ← → keys</div>
+  <div id="fcbar"></div><div id="fctxt"></div>
+  <div id="fcprog">1 / 1</div><div id="fchint">tap · ← →</div>
   <button class="xbtn" style="position:absolute;top:20px;right:20px" onclick="cfc(event)">✕</button>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// SETUP & UTILITIES
-// ═══════════════════════════════════════════════════════
+// ─── HELPERS ──────────────────────────────────────────
 const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
 if (isIOS) document.getElementById('ios-note').style.display = 'block';
-
 let tc = '#fff';
-
-function stc(el) {
-  document.querySelectorAll('.cs').forEach(s => s.classList.remove('sel'));
-  el.classList.add('sel'); tc = el.dataset.c;
-}
-function tset() {
-  const b = document.getElementById('setb');
-  b.style.display = b.style.display === 'none' ? 'block' : 'none';
-}
-function swp(m, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + m).classList.add('active');
-  btn.classList.add('active');
-}
-function gon(id) { return document.getElementById(id).classList.contains('on'); }
-
-function showToast(msg) {
-  const t = document.getElementById('save-toast');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 5000);
+function stc(el){document.querySelectorAll('.cs').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');tc=el.dataset.c}
+function tset(){const b=document.getElementById('setb');b.style.display=b.style.display==='none'?'block':'none'}
+function swp(m,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+m).classList.add('active');btn.classList.add('active')}
+function gon(id){return document.getElementById(id).classList.contains('on')}
+function fmtTime(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function showToast(){const t=document.getElementById('save-toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),5000)}
+function cdwn(oId,nId){
+  return new Promise(r=>{
+    const o=document.getElementById(oId),n=document.getElementById(nId);
+    o.classList.add('show');let c=3;n.textContent=c;
+    const iv=setInterval(()=>{c--;if(c<=0){clearInterval(iv);o.classList.remove('show');r()}else n.textContent=c},1000)
+  })
 }
 
-function cdwn(oId, nId) {
-  return new Promise(resolve => {
-    const o = document.getElementById(oId), n = document.getElementById(nId);
-    o.classList.add('show'); let c = 3; n.textContent = c;
-    const iv = setInterval(() => {
-      c--;
-      if (c <= 0) { clearInterval(iv); o.classList.remove('show'); resolve(); }
-      else n.textContent = c;
-    }, 1000);
-  });
+// ─── FLOAT BOX STATE ──────────────────────────────────
+let fmh=false, fmv=false, fgdOn=true;
+
+function applyTx(){
+  document.getElementById('ftext').style.transform=`scale(${fmh?-1:1},${fmv?-1:1})`;
 }
 
-// ═══════════════════════════════════════════════════════
-// FLOAT BOX STATE
-// ═══════════════════════════════════════════════════════
-let fmh = false, fmv = false, fgdOn = true, falign = 'left';
-
-function applyTransform() {
-  const sx = fmh ? -1 : 1, sy = fmv ? -1 : 1;
-  document.getElementById('ftext').style.transform = `scale(${sx},${sy})`;
-}
-
-// Font size slider
-document.getElementById('ffs-range').addEventListener('input', function() {
-  document.getElementById('ffsv').textContent = this.value + 'px';
-  document.getElementById('ftext').style.fontSize = this.value + 'px';
+document.getElementById('ffs-r').addEventListener('input',function(){
+  document.getElementById('ffsv').textContent=this.value;
+  document.getElementById('ftext').style.fontSize=this.value+'px';
 });
-
-// Speed display
-document.getElementById('rspd').addEventListener('input', function() {
-  document.getElementById('rspdv').textContent = this.value;
+document.getElementById('rspd').addEventListener('input',function(){
+  document.getElementById('rspdv').textContent=this.value;
 });
+document.getElementById('alL').addEventListener('click',function(){sa('left','alL')});
+document.getElementById('alC').addEventListener('click',function(){sa('center','alC')});
+document.getElementById('alR').addEventListener('click',function(){sa('right','alR')});
+function sa(a,id){['alL','alC','alR'].forEach(i=>document.getElementById(i).classList.remove('on'));document.getElementById(id).classList.add('on');document.getElementById('ftext').style.textAlign=a}
+document.getElementById('bmh').addEventListener('click',function(){fmh=!fmh;this.classList.toggle('on',fmh);applyTx()});
+document.getElementById('bmv').addEventListener('click',function(){fmv=!fmv;this.classList.toggle('on',fmv);applyTx()});
+document.getElementById('bgd').addEventListener('click',function(){fgdOn=!fgdOn;this.classList.toggle('on',fgdOn);document.getElementById('fguide').style.display=fgdOn?'block':'none'});
 
-// Alignment
-document.getElementById('alL').addEventListener('click', function() { setAlign('left', 'alL'); });
-document.getElementById('alC').addEventListener('click', function() { setAlign('center', 'alC'); });
-document.getElementById('alR').addEventListener('click', function() { setAlign('right', 'alR'); });
-function setAlign(a, id) {
-  falign = a;
-  ['alL','alC','alR'].forEach(i => document.getElementById(i).classList.remove('on'));
-  document.getElementById(id).classList.add('on');
-  document.getElementById('ftext').style.textAlign = a;
-}
-
-// Mirror buttons
-document.getElementById('bmh').addEventListener('click', function() {
-  fmh = !fmh; this.classList.toggle('on', fmh); applyTransform();
-});
-document.getElementById('bmv').addEventListener('click', function() {
-  fmv = !fmv; this.classList.toggle('on', fmv); applyTransform();
-});
-
-// Guide line
-document.getElementById('bgd').addEventListener('click', function() {
-  fgdOn = !fgdOn;
-  this.classList.toggle('on', fgdOn);
-  document.getElementById('fguide').style.display = fgdOn ? 'block' : 'none';
-});
-
-// ═══════════════════════════════════════════════════════
-// DRAG FLOAT BOX (by top bar)
-// ═══════════════════════════════════════════════════════
-(function () {
-  const box = document.getElementById('fbox');
-  const top = document.getElementById('ftop');
-  let drag = false, ox = 0, oy = 0, sx = 0, sy = 0;
-
-  function snapToScreen() {
-    const r = box.getBoundingClientRect();
-    ox = r.left; oy = r.top;
-    box.style.transform = 'none';
-    box.style.left = ox + 'px';
-    box.style.top = oy + 'px';
-  }
-  function move(cx, cy) {
-    if (!drag) return;
-    const nx = Math.max(0, Math.min(window.innerWidth - box.offsetWidth, ox + (cx - sx)));
-    const ny = Math.max(0, Math.min(window.innerHeight - 60, oy + (cy - sy)));
-    box.style.left = nx + 'px';
-    box.style.top = ny + 'px';
-  }
-
-  top.addEventListener('mousedown', function(e) {
-    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
-    snapToScreen(); drag = true; sx = e.clientX; sy = e.clientY; e.preventDefault();
-  });
-  document.addEventListener('mousemove', e => move(e.clientX, e.clientY));
-  document.addEventListener('mouseup', () => drag = false);
-
-  top.addEventListener('touchstart', function(e) {
-    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
-    snapToScreen(); drag = true; sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-  }, { passive: true });
-  document.addEventListener('touchmove', e => { if (drag) move(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-  document.addEventListener('touchend', () => drag = false);
+// ─── DRAG FLOAT BOX ───────────────────────────────────
+(function(){
+  const box=document.getElementById('fbox'), top=document.getElementById('ftop');
+  let drag=false,ox=0,oy=0,sx=0,sy=0;
+  function snap(){const r=box.getBoundingClientRect();ox=r.left;oy=r.top;box.style.transform='none';box.style.left=ox+'px';box.style.top=oy+'px'}
+  function mv(cx,cy){if(!drag)return;box.style.left=Math.max(0,Math.min(window.innerWidth-box.offsetWidth,ox+(cx-sx)))+'px';box.style.top=Math.max(0,Math.min(window.innerHeight-60,oy+(cy-sy)))+'px'}
+  top.addEventListener('mousedown',function(e){if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;snap();drag=true;sx=e.clientX;sy=e.clientY;e.preventDefault()});
+  document.addEventListener('mousemove',e=>mv(e.clientX,e.clientY));
+  document.addEventListener('mouseup',()=>drag=false);
+  top.addEventListener('touchstart',function(e){if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;snap();drag=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  document.addEventListener('touchmove',e=>{if(drag)mv(e.touches[0].clientX,e.touches[0].clientY)},{passive:true});
+  document.addEventListener('touchend',()=>drag=false);
 })();
 
-// ═══════════════════════════════════════════════════════
-// RESIZE FLOAT BOX (bottom-right grip)
-// ═══════════════════════════════════════════════════════
-(function () {
-  const box = document.getElementById('fbox');
-  const grip = document.getElementById('fgrip');
-  let resizing = false, sx = 0, sy = 0, sw = 0, sh = 0;
+// ─── RESIZE: ALL 8 HANDLES ────────────────────────────
+(function(){
+  const box=document.getElementById('fbox');
+  let active=null, sx=0,sy=0, ox=0,oy=0, ow=0,oh=0;
 
-  grip.addEventListener('mousedown', function(e) {
-    resizing = true;
-    sx = e.clientX; sy = e.clientY;
-    sw = box.offsetWidth;
-    // get current fscroll height
-    sh = document.getElementById('fscroll').offsetHeight;
-    e.preventDefault(); e.stopPropagation();
-  });
-  document.addEventListener('mousemove', function(e) {
-    if (!resizing) return;
-    const nw = Math.max(240, sw + (e.clientX - sx));
-    const dh = e.clientY - sy;
-    const nh = Math.max(80, sh + dh);
-    box.style.width = nw + 'px';
-    document.getElementById('fscroll').style.height = nh + 'px';
-  });
-  document.addEventListener('mouseup', () => resizing = false);
+  function getScrollH(){return document.getElementById('fscroll').offsetHeight}
+  // header rows height (fixed)
+  function headerH(){return document.getElementById('ftop').offsetHeight + document.getElementById('fbar2').offsetHeight}
 
-  grip.addEventListener('touchstart', function(e) {
-    resizing = true;
-    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-    sw = box.offsetWidth;
-    sh = document.getElementById('fscroll').offsetHeight;
-    e.stopPropagation();
-  }, { passive: true });
-  document.addEventListener('touchmove', function(e) {
-    if (!resizing) return;
-    const nw = Math.max(240, sw + (e.touches[0].clientX - sx));
-    const nh = Math.max(80, sh + (e.touches[0].clientY - sy));
-    box.style.width = nw + 'px';
-    document.getElementById('fscroll').style.height = nh + 'px';
-  }, { passive: true });
-  document.addEventListener('touchend', () => resizing = false);
+  function startResize(dir,cx,cy){
+    active=dir; sx=cx; sy=cy;
+    const r=box.getBoundingClientRect();
+    ox=r.left; oy=r.top; ow=r.width; oh=r.height;
+    box.style.transform='none';
+    box.style.left=ox+'px'; box.style.top=oy+'px';
+  }
+
+  function doResize(cx,cy){
+    if(!active)return;
+    const dx=cx-sx, dy=cy-sy;
+    let nl=ox, nt=oy, nw=ow, nh=oh;
+
+    if(active.includes('e')) nw=Math.max(240,ow+dx);
+    if(active.includes('s')) nh=Math.max(140,oh+dy);
+    if(active.includes('w')){nw=Math.max(240,ow-dx);nl=ox+ow-nw}
+    if(active.includes('n')){nh=Math.max(140,oh-dy);nt=oy+oh-nh}
+
+    box.style.width=nw+'px';
+    box.style.left=nl+'px';
+    box.style.top=nt+'px';
+    const sh=Math.max(60,nh-headerH()-4);
+    document.getElementById('fscroll').style.height=sh+'px';
+  }
+
+  document.querySelectorAll('.rh').forEach(el=>{
+    const dir=el.dataset.dir;
+    el.addEventListener('mousedown',e=>{startResize(dir,e.clientX,e.clientY);e.preventDefault();e.stopPropagation()});
+    el.addEventListener('touchstart',e=>{startResize(dir,e.touches[0].clientX,e.touches[0].clientY);e.stopPropagation()},{passive:true});
+  });
+  document.addEventListener('mousemove',e=>{if(active)doResize(e.clientX,e.clientY)});
+  document.addEventListener('mouseup',()=>active=null);
+  document.addEventListener('touchmove',e=>{if(active)doResize(e.touches[0].clientX,e.touches[0].clientY)},{passive:true});
+  document.addEventListener('touchend',()=>active=null);
 })();
 
-// ═══════════════════════════════════════════════════════
-// RECORDER: SCROLL ENGINE
-// ═══════════════════════════════════════════════════════
-let ry = 0, rplaying = false, rriv = null, rtiv = null, rs = 0;
+// ─── SCROLL ENGINE ────────────────────────────────────
+let ry=0, rplaying=false, rriv=null;
 
-function startScroll() {
-  stopScroll();
-  rplaying = true;
-  document.getElementById('btn-play').textContent = '⏸';
-  startRTimer();
-  const c = document.getElementById('fscroll');
-  rriv = setInterval(() => {
-    const spd = parseFloat(document.getElementById('rspd').value);
-    ry += spd * 0.5;
-    c.scrollTop = ry;
-    if (ry >= c.scrollHeight - c.clientHeight) {
-      if (gon('tlp')) { ry = 0; c.scrollTop = 0; }
-      else stopScroll();
+function startScroll(){
+  stopScroll(); rplaying=true;
+  document.getElementById('btn-play').textContent='⏸';
+  const c=document.getElementById('fscroll');
+  rriv=setInterval(()=>{
+    ry+=parseFloat(document.getElementById('rspd').value)*0.5;
+    c.scrollTop=ry;
+    if(ry>=c.scrollHeight-c.clientHeight){
+      if(gon('tlp')){ry=0;c.scrollTop=0}else stopScroll();
     }
-  }, 16);
+  },16);
 }
-function stopScroll() {
-  clearInterval(rriv); rriv = null; rplaying = false;
-  document.getElementById('btn-play').textContent = '▶';
-  stopRTimer();
+function stopScroll(){
+  clearInterval(rriv);rriv=null;rplaying=false;
+  document.getElementById('btn-play').textContent='▶';
 }
-function startRTimer() {
-  clearInterval(rtiv);
-  rtiv = setInterval(() => {
-    rs++;
-    document.getElementById('rtimer').textContent =
-      Math.floor(rs / 60) + ':' + String(rs % 60).padStart(2, '0');
-  }, 1000);
-}
-function stopRTimer() { clearInterval(rtiv); }
 
-// Wire play button
-document.getElementById('btn-play').addEventListener('click', function() {
-  rplaying ? stopScroll() : startScroll();
-});
-// Wire restart button
-document.getElementById('btn-rst').addEventListener('click', function() {
-  ry = 0; rs = 0;
-  document.getElementById('fscroll').scrollTop = 0;
-  document.getElementById('rtimer').textContent = '0:00';
-  if (!rplaying) startScroll();
+document.getElementById('btn-play').addEventListener('click',()=>rplaying?stopScroll():startScroll());
+document.getElementById('btn-rst').addEventListener('click',()=>{
+  ry=0;document.getElementById('fscroll').scrollTop=0;
+  if(!rplaying)startScroll();
 });
 
-// ═══════════════════════════════════════════════════════
-// RECORDER: WEBCAM + VIDEO CAPTURE
-// ═══════════════════════════════════════════════════════
-let camStream = null, mr = null, rch = [], isrec = false;
+// ─── REC TIMER (independent from scroll) ──────────────
+let rtiv=null, rs=0;
+function startRTimer(){
+  clearInterval(rtiv); rs=0;
+  document.getElementById('rtimer').textContent='0:00';
+  rtiv=setInterval(()=>{rs++;document.getElementById('rtimer').textContent=fmtTime(rs)},1000);
+}
+function stopRTimer(){clearInterval(rtiv);rtiv=null}
 
-document.getElementById('btn-rec').addEventListener('click', function() {
-  isrec ? stopRecording() : startRecording();
-});
+// ─── WEBCAM RECORDING ─────────────────────────────────
+let camStream=null, mr=null, rch=[], isrec=false;
 
-async function startRecording() {
-  if (!camStream) { alert('Camera not ready.'); return; }
-  try {
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const combined = new MediaStream([
-      ...camStream.getVideoTracks(),
-      ...micStream.getAudioTracks()
-    ]);
-    const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-      ? 'video/webm;codecs=vp9,opus'
-      : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4';
-    mr = new MediaRecorder(combined, { mimeType: mime });
-    rch = [];
-    mr.ondataavailable = e => { if (e.data.size > 0) rch.push(e.data); };
-    mr.onstop = saveRecording;
+document.getElementById('btn-rec').addEventListener('click',()=>isrec?stopRec():startRec());
+
+async function startRec(){
+  if(!camStream){alert('Camera not ready.');return}
+  try{
+    const mic=await navigator.mediaDevices.getUserMedia({audio:true});
+    const combined=new MediaStream([...camStream.getVideoTracks(),...mic.getAudioTracks()]);
+    const mime=MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')?'video/webm;codecs=vp9,opus':MediaRecorder.isTypeSupported('video/webm')?'video/webm':'video/mp4';
+    mr=new MediaRecorder(combined,{mimeType:mime});
+    rch=[];
+    mr.ondataavailable=e=>{if(e.data.size>0)rch.push(e.data)};
+    mr.onstop=saveRec;
     mr.start(500);
-    isrec = true;
+    isrec=true;
     document.getElementById('btn-rec').classList.add('rcon');
     document.getElementById('recdot').classList.add('show');
-  } catch(e) {
-    alert('Mic access needed to record. Please allow microphone.\n\n' + e.message);
-  }
+    startRTimer(); // ← timer starts HERE with recording
+  }catch(e){alert('Microphone access needed to record.\n\n'+e.message)}
 }
-function stopRecording() {
-  if (mr && mr.state !== 'inactive') mr.stop();
-  isrec = false;
+function stopRec(){
+  if(mr&&mr.state!=='inactive')mr.stop();
+  isrec=false;
   document.getElementById('btn-rec').classList.remove('rcon');
   document.getElementById('recdot').classList.remove('show');
+  stopRTimer();
 }
-function saveRecording() {
-  const ext = (rch[0]?.type || '').includes('mp4') ? 'mp4' : 'webm';
-  const blob = new Blob(rch, { type: rch[0]?.type || 'video/webm' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'recording-' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.' + ext;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+function saveRec(){
+  const ext=(rch[0]?.type||'').includes('mp4')?'mp4':'webm';
+  const blob=new Blob(rch,{type:rch[0]?.type||'video/webm'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='recording-'+new Date().toISOString().slice(0,19).replace(/:/g,'-')+'.'+ext;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1000);
   showToast();
 }
 
-// ═══════════════════════════════════════════════════════
-// LAUNCH CAMERA MODE
-// ═══════════════════════════════════════════════════════
-async function lwCam() {
-  const script = document.getElementById('si').value.trim();
-  if (!script) { alert('Please enter your script first.'); return; }
+// ─── LAUNCH CAMERA MODE ───────────────────────────────
+async function lwCam(){
+  const script=document.getElementById('si').value.trim();
+  if(!script){alert('Please enter your script first.');return}
+  if(isIOS){alert('iPhone Safari cannot record webcam.\nOpening Prompter Only instead.');lpOnly();return}
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+    document.getElementById('webcam-vid').srcObject=camStream;
+  }catch(e){alert('Camera access denied: '+e.message);return}
 
-  if (isIOS) {
-    alert('iPhone Safari cannot record webcam.\nOpening Prompter Only instead.');
-    lpOnly(); return;
-  }
+  // Reset box position & size
+  const box=document.getElementById('fbox');
+  box.style.cssText='position:absolute;top:20px;left:50%;width:580px;height:300px;transform:translateX(-50%);background:rgba(0,0,0,.82);backdrop-filter:blur(10px);border-radius:14px;border:1.5px solid rgba(255,255,255,.18);display:flex;flex-direction:column;min-width:240px;min-height:140px';
+  document.getElementById('fscroll').style.height='';
 
-  try {
-    camStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-      audio: false
-    });
-    document.getElementById('webcam-vid').srcObject = camStream;
-  } catch(e) {
-    alert('Camera access denied: ' + e.message); return;
-  }
+  // Sync settings
+  const fs=document.getElementById('fsi').value;
+  document.getElementById('ffs-r').value=fs;
+  document.getElementById('ffsv').textContent=fs;
+  document.getElementById('ftext').style.fontSize=fs+'px';
+  document.getElementById('ftext').style.color=tc;
+  document.getElementById('ftext').innerHTML=script.replace(/\n/g,'<br>');
+  document.getElementById('rspd').value=document.getElementById('spdi').value;
+  document.getElementById('rspdv').textContent=document.getElementById('spdi').value;
 
-  // Reset float box
-  const box = document.getElementById('fbox');
-  box.style.width = '580px';
-  box.style.left = '50%';
-  box.style.top = '30px';
-  box.style.transform = 'translateX(-50%)';
-  document.getElementById('fscroll').style.height = '220px';
-
-  // Apply script
-  const fs = document.getElementById('fsi').value;
-  document.getElementById('ffs-range').value = fs;
-  document.getElementById('ffsv').textContent = fs + 'px';
-  document.getElementById('ftext').style.fontSize = fs + 'px';
-  document.getElementById('ftext').style.color = tc;
-  document.getElementById('ftext').innerHTML = script.replace(/\n/g, '<br>');
-  document.getElementById('rspd').value = document.getElementById('spdi').value;
-  document.getElementById('rspdv').textContent = document.getElementById('spdi').value;
-
-  // Reset transforms + alignment
-  fmh = false; fmv = false; falign = 'left';
-  document.getElementById('ftext').style.transform = '';
-  document.getElementById('ftext').style.textAlign = 'left';
+  // Reset state
+  fmh=false;fmv=false;
+  document.getElementById('ftext').style.transform='';
+  document.getElementById('ftext').style.textAlign='left';
   document.getElementById('bmh').classList.remove('on');
   document.getElementById('bmv').classList.remove('on');
-  ['alL','alC','alR'].forEach(i => document.getElementById(i).classList.remove('on'));
+  ['alL','alC','alR'].forEach(i=>document.getElementById(i).classList.remove('on'));
   document.getElementById('alL').classList.add('on');
-
-  // Guide
-  fgdOn = true;
-  document.getElementById('fguide').style.display = 'block';
-  document.getElementById('bgd').classList.add('on');
-
-  // Reset scroll + timer
-  ry = 0; rs = 0;
-  document.getElementById('fscroll').scrollTop = 0;
-  document.getElementById('rtimer').textContent = '0:00';
-  stopScroll();
+  fgdOn=true;document.getElementById('fguide').style.display='block';document.getElementById('bgd').classList.add('on');
+  ry=0;document.getElementById('fscroll').scrollTop=0;
+  stopScroll();stopRTimer();rs=0;document.getElementById('rtimer').textContent='0:00';
 
   document.getElementById('rec-screen').classList.add('show');
-
-  if (gon('tcd')) await cdwn('cdo', 'cdn');
+  if(gon('tcd'))await cdwn('cdo','cdn');
   startScroll();
 }
 
-function clrec() {
+function clrec(){
   stopScroll();
-  if (isrec) stopRecording();
-  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-  document.getElementById('webcam-vid').srcObject = null;
+  if(isrec)stopRec();
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}
+  document.getElementById('webcam-vid').srcObject=null;
   document.getElementById('rec-screen').classList.remove('show');
-  rs = 0;
 }
 
-// ═══════════════════════════════════════════════════════
-// FULLSCREEN PROMPTER (no camera)
-// ═══════════════════════════════════════════════════════
-let py = 0, ppl = false, ppiv = null, ptiv = null, ps = 0, pmr = false, pgdP = true;
-
-async function lpOnly() {
-  const script = document.getElementById('si').value.trim();
-  if (!script) { alert('Please enter your script first.'); return; }
-  const fs = document.getElementById('fsi').value;
-  const pt = document.getElementById('ptext');
-  pt.style.fontSize = fs + 'px'; pt.style.color = tc;
-  pt.innerHTML = script.replace(/\n/g, '<br>');
-  document.getElementById('pspd').value = document.getElementById('spdi').value;
-  pmr = false; document.getElementById('pov').classList.remove('mh'); document.getElementById('pmr').classList.remove('active');
-  pgdP = true; document.getElementById('pguide').style.display = 'block'; document.getElementById('pgd').classList.add('active');
-  py = 0; document.getElementById('pscroll').scrollTop = 0;
-  ps = 0; document.getElementById('ptimer').textContent = '0:00';
-  ppl = false; document.getElementById('pplay').textContent = '▶';
+// ─── FULLSCREEN PROMPTER ──────────────────────────────
+let py=0,ppl=false,ppiv=null,ptiv=null,ps=0,pmr=false,pgdP=true;
+async function lpOnly(){
+  const script=document.getElementById('si').value.trim();
+  if(!script){alert('Please enter your script first.');return}
+  const fs=document.getElementById('fsi').value;
+  const pt=document.getElementById('ptext');
+  pt.style.fontSize=fs+'px';pt.style.color=tc;pt.innerHTML=script.replace(/\n/g,'<br>');
+  document.getElementById('pspd').value=document.getElementById('spdi').value;
+  pmr=false;document.getElementById('pov').classList.remove('mh');document.getElementById('pmr').classList.remove('active');
+  pgdP=true;document.getElementById('pguide').style.display='block';document.getElementById('pgd').classList.add('active');
+  py=0;document.getElementById('pscroll').scrollTop=0;
+  ps=0;document.getElementById('ptimer').textContent='0:00';
+  ppl=false;document.getElementById('pplay').textContent='▶';
   document.getElementById('pov').classList.add('show');
-  if (gon('tcd')) await cdwn('cdo2', 'cdn2');
+  if(gon('tcd'))await cdwn('cdo2','cdn2');
   spp();
 }
-function spp() {
-  stpp(); ppl = true; document.getElementById('pplay').textContent = '⏸';
-  sPTimer();
-  const c = document.getElementById('pscroll');
-  ppiv = setInterval(() => {
-    py += parseFloat(document.getElementById('pspd').value) * 0.5;
-    c.scrollTop = py;
-    if (py >= c.scrollHeight - c.clientHeight) {
-      gon('tlp') ? (py = 0, c.scrollTop = 0) : stpp();
-    }
-  }, 16);
-}
-function stpp() { clearInterval(ppiv); ppiv = null; ppl = false; document.getElementById('pplay').textContent = '▶'; stPTimer(); }
-function tpp() { ppl ? stpp() : spp(); }
-function prst() { py = 0; document.getElementById('pscroll').scrollTop = 0; ps = 0; if (!ppl) spp(); }
-function tpgd() { pgdP = !pgdP; document.getElementById('pguide').style.display = pgdP ? 'block' : 'none'; document.getElementById('pgd').classList.toggle('active', pgdP); }
-function tpmr() { pmr = !pmr; document.getElementById('pov').classList.toggle('mh', pmr); document.getElementById('pmr').classList.toggle('active', pmr); }
-function sPTimer() { clearInterval(ptiv); ptiv = setInterval(() => { ps++; document.getElementById('ptimer').textContent = Math.floor(ps/60)+':'+String(ps%60).padStart(2,'0'); }, 1000); }
-function stPTimer() { clearInterval(ptiv); }
-function clp() { stpp(); document.getElementById('pov').classList.remove('show'); ps = 0; }
+function spp(){stpp();ppl=true;document.getElementById('pplay').textContent='⏸';sPT();const c=document.getElementById('pscroll');ppiv=setInterval(()=>{py+=parseFloat(document.getElementById('pspd').value)*0.5;c.scrollTop=py;if(py>=c.scrollHeight-c.clientHeight){gon('tlp')?(py=0,c.scrollTop=0):stpp()}},16)}
+function stpp(){clearInterval(ppiv);ppiv=null;ppl=false;document.getElementById('pplay').textContent='▶';stPT()}
+function tpp(){ppl?stpp():spp()}
+function prst(){py=0;document.getElementById('pscroll').scrollTop=0;ps=0;if(!ppl)spp()}
+function tpgd(){pgdP=!pgdP;document.getElementById('pguide').style.display=pgdP?'block':'none';document.getElementById('pgd').classList.toggle('active',pgdP)}
+function tpmr(){pmr=!pmr;document.getElementById('pov').classList.toggle('mh',pmr);document.getElementById('pmr').classList.toggle('active',pmr)}
+function sPT(){clearInterval(ptiv);ptiv=setInterval(()=>{ps++;document.getElementById('ptimer').textContent=fmtTime(ps)},1000)}
+function stPT(){clearInterval(ptiv)}
+function clp(){stpp();document.getElementById('pov').classList.remove('show');ps=0}
 
-// ═══════════════════════════════════════════════════════
-// FLASHCARD
-// ═══════════════════════════════════════════════════════
-let fcc = [], fci = 0;
-function lfc() {
-  const sc = document.getElementById('si').value.trim();
-  if (!sc) { alert('Please enter your script first.'); return; }
-  const ck = parseInt(document.getElementById('cks').value);
-  const words = sc.split(/\s+/).filter(Boolean); fcc = [];
-  for (let i = 0; i < words.length; i += ck) fcc.push(words.slice(i, i+ck).join(' '));
-  fci = 0;
-  const fs = document.getElementById('fcfs').value;
-  document.getElementById('fctxt').style.fontSize = fs + 'px';
-  document.getElementById('fctxt').style.color = tc;
-  shfc(0); document.getElementById('fcov').classList.add('show');
+// ─── FLASHCARD ────────────────────────────────────────
+let fcc=[],fci=0;
+function lfc(){
+  const sc=document.getElementById('si').value.trim();if(!sc){alert('Please enter your script first.');return}
+  const ck=parseInt(document.getElementById('cks').value);
+  const words=sc.split(/\s+/).filter(Boolean);fcc=[];
+  for(let i=0;i<words.length;i+=ck)fcc.push(words.slice(i,i+ck).join(' '));
+  fci=0;const fs=document.getElementById('fcfs').value;
+  document.getElementById('fctxt').style.fontSize=fs+'px';document.getElementById('fctxt').style.color=tc;
+  shfc(0);document.getElementById('fcov').classList.add('show');
 }
-function shfc(i) {
-  const t = document.getElementById('fctxt'); t.classList.add('fade');
-  setTimeout(() => {
-    t.textContent = fcc[i] || '';
-    document.getElementById('fcprog').textContent = (i+1) + ' / ' + fcc.length;
-    document.getElementById('fcbar').style.width = ((i+1)/fcc.length*100) + '%';
-    t.classList.remove('fade');
-  }, 180);
-}
-function nfc() { if (fci < fcc.length-1) shfc(++fci); }
-function pfc() { if (fci > 0) shfc(--fci); }
-function cfc(e) { e.stopPropagation(); document.getElementById('fcov').classList.remove('show'); }
+function shfc(i){const t=document.getElementById('fctxt');t.classList.add('fade');setTimeout(()=>{t.textContent=fcc[i]||'';document.getElementById('fcprog').textContent=(i+1)+' / '+fcc.length;document.getElementById('fcbar').style.width=((i+1)/fcc.length*100)+'%';t.classList.remove('fade')},180)}
+function nfc(){if(fci<fcc.length-1)shfc(++fci)}
+function pfc(){if(fci>0)shfc(--fci)}
+function cfc(e){e.stopPropagation();document.getElementById('fcov').classList.remove('show')}
 
-// ═══════════════════════════════════════════════════════
-// KEYBOARD
-// ═══════════════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if (document.getElementById('fcov').classList.contains('show')) {
-    if (e.key==='ArrowRight'||e.key===' '){e.preventDefault();nfc()}
-    if (e.key==='ArrowLeft'){e.preventDefault();pfc()}
-    if (e.key==='Escape') cfc({stopPropagation:()=>{}});
-    return;
+// ─── KEYBOARD ─────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('fcov').classList.contains('show')){
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nfc()}
+    if(e.key==='ArrowLeft'){e.preventDefault();pfc()}
+    if(e.key==='Escape')cfc({stopPropagation:()=>{}});return
   }
-  if (document.getElementById('rec-screen').classList.contains('show')) {
-    if (e.key===' ') { e.preventDefault(); rplaying ? stopScroll() : startScroll(); }
-    if (e.key==='Escape') clrec();
-    return;
+  if(document.getElementById('rec-screen').classList.contains('show')){
+    if(e.key===' '){e.preventDefault();rplaying?stopScroll():startScroll()}
+    if(e.key==='Escape')clrec();return
   }
-  if (document.getElementById('pov').classList.contains('show')) {
-    if (e.key===' ') { e.preventDefault(); tpp(); }
-    if (e.key==='Escape') clp();
-    if (e.key==='ArrowUp') { const s=document.getElementById('pspd'); s.value=Math.max(1,+s.value-1); }
-    if (e.key==='ArrowDown') { const s=document.getElementById('pspd'); s.value=Math.min(15,+s.value+1); }
+  if(document.getElementById('pov').classList.contains('show')){
+    if(e.key===' '){e.preventDefault();tpp()}
+    if(e.key==='Escape')clp()
+    if(e.key==='ArrowUp'){const s=document.getElementById('pspd');s.value=Math.max(1,+s.value-1)}
+    if(e.key==='ArrowDown'){const s=document.getElementById('pspd');s.value=Math.min(15,+s.value+1)}
   }
 });
 </script>
