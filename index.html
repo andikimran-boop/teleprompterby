@@ -51,51 +51,79 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 #rec-screen.show{display:block}
 #webcam-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);pointer-events:none}
 
-/* ══ FLOAT BOX — all 8 resize handles ══ */
+/* ══ FLOAT BOX ══ */
 #fbox{
   position:absolute;
-  top:20px; left:50%;
-  width:580px; height:300px;
+  top:20px;left:50%;
+  width:580px;
+  /* height is set by JS; no flex height trick */
   background:rgba(0,0,0,.82);
   backdrop-filter:blur(10px);
   border-radius:14px;
   border:1.5px solid rgba(255,255,255,.18);
-  display:flex; flex-direction:column;
-  min-width:240px; min-height:140px;
-  /* JS will clear transform after first drag */
+  /* layout: text on top, controls pinned below */
+  display:flex;flex-direction:column;
+  min-width:240px;
+  overflow:visible; /* let resize handles stick out */
 }
 
-/* 8 resize handles around the box */
-.rh{position:absolute;z-index:20}
-/* edges */
-.rh-n {top:-4px;left:12px;right:12px;height:8px;cursor:n-resize}
-.rh-s {bottom:-4px;left:12px;right:12px;height:8px;cursor:s-resize}
-.rh-w {left:-4px;top:12px;bottom:12px;width:8px;cursor:w-resize}
-.rh-e {right:-4px;top:12px;bottom:12px;width:8px;cursor:e-resize}
-/* corners */
-.rh-nw{top:-4px;left:-4px;width:16px;height:16px;cursor:nw-resize;border-radius:4px 0 0 0}
-.rh-ne{top:-4px;right:-4px;width:16px;height:16px;cursor:ne-resize;border-radius:0 4px 0 0}
-.rh-sw{bottom:-4px;left:-4px;width:16px;height:16px;cursor:sw-resize;border-radius:0 0 0 4px}
-.rh-se{bottom:-4px;right:-4px;width:16px;height:16px;cursor:se-resize;border-radius:0 0 4px 0}
-/* visible SE grip indicator */
+/* ── 8 resize handles ── */
+.rh{position:absolute;z-index:20;background:transparent}
+.rh-n {top:-5px;left:16px;right:16px;height:10px;cursor:n-resize}
+.rh-s {bottom:-5px;left:16px;right:16px;height:10px;cursor:s-resize}
+.rh-w {left:-5px;top:16px;bottom:16px;width:10px;cursor:w-resize}
+.rh-e {right:-5px;top:16px;bottom:16px;width:10px;cursor:e-resize}
+.rh-nw{top:-5px;left:-5px;width:20px;height:20px;cursor:nw-resize}
+.rh-ne{top:-5px;right:-5px;width:20px;height:20px;cursor:ne-resize}
+.rh-sw{bottom:-5px;left:-5px;width:20px;height:20px;cursor:sw-resize}
+.rh-se{bottom:-5px;right:-5px;width:20px;height:20px;cursor:se-resize}
+/* visible SE corner marker */
 .rh-se::after{
-  content:'';position:absolute;bottom:4px;right:4px;
-  width:10px;height:10px;
-  border-right:2.5px solid rgba(255,255,255,.55);
-  border-bottom:2.5px solid rgba(255,255,255,.55);
+  content:'';position:absolute;bottom:5px;right:5px;
+  width:11px;height:11px;
+  border-right:2.5px solid rgba(255,255,255,.6);
+  border-bottom:2.5px solid rgba(255,255,255,.6);
   border-radius:0 0 2px 0;
 }
 .rh-se:hover::after{border-color:var(--accent)}
 
-/* top drag bar */
-#ftop{
-  display:flex;align-items:center;gap:8px;padding:9px 12px;
-  background:rgba(255,255,255,.05);
+/* ── TOP drag handle (thin, sits above text) ── */
+#ftop-drag{
+  height:20px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:move;
+  background:rgba(255,255,255,.04);
   border-radius:12px 12px 0 0;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  cursor:move; flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
 }
-#ftop button,#ftop input{cursor:pointer;pointer-events:all}
+#ftop-drag::after{
+  content:'';width:36px;height:3px;
+  border-radius:2px;background:rgba(255,255,255,.25);
+}
+
+/* ── SCRIPT TEXT (top section, grows with box height) ── */
+#fscroll{
+  overflow:hidden;
+  position:relative;
+  /* height controlled by JS resize; fallback */
+  height:200px;
+  min-height:60px;
+}
+#ftrack{padding:14px 20px 14px}
+#ftext{line-height:1.5;word-break:break-word;text-shadow:0 1px 10px rgba(0,0,0,.95);font-weight:500}
+
+/* ── CONTROLS BAR — pinned below text ── */
+#fcontrols{
+  flex-shrink:0;
+  background:rgba(0,0,0,.55);
+  border-top:1px solid rgba(255,255,255,.08);
+  border-radius:0 0 12px 12px;
+  padding:8px 12px;
+  display:flex;flex-direction:column;gap:6px;
+}
+/* row inside controls */
+.crow2{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .ftb{
   width:36px;height:36px;border-radius:50%;
   border:1.5px solid rgba(255,255,255,.3);
@@ -107,37 +135,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .ftb:hover{background:rgba(255,255,255,.25)}
 .ftb.rcon{background:var(--red);border-color:var(--red);animation:rp 1.5s infinite}
 @keyframes rp{0%,100%{box-shadow:0 0 0 0 rgba(224,48,48,.5)}50%{box-shadow:0 0 0 8px rgba(224,48,48,0)}}
-.spdrow{display:flex;align-items:center;gap:6px;flex:1;min-width:80px;max-width:160px}
+.spdrow{display:flex;align-items:center;gap:6px;flex:1;min-width:80px;max-width:180px}
 .spdrow label{font-size:.65rem;color:rgba(255,255,255,.45);white-space:nowrap}
 .spdrow input{flex:1}
-.spdval{font-size:.65rem;color:var(--accent);font-weight:700;min-width:16px}
+.spdval{font-size:.65rem;color:var(--accent);font-weight:700;min-width:14px}
 #recdot{display:none;align-items:center;gap:4px;font-size:.68rem;font-weight:700;color:var(--red);letter-spacing:1px}
 #recdot.show{display:flex}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:rb 1s infinite}
 @keyframes rb{0%,100%{opacity:1}50%{opacity:.1}}
 #rtimer{font-family:'Space Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.4);min-width:30px}
-
-/* second bar: font + align + mirror + guide */
-#fbar2{
-  display:flex;align-items:center;gap:5px;padding:6px 12px;
-  background:rgba(0,0,0,.3);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  flex-wrap:wrap;flex-shrink:0;
-}
-.b2l{font-size:.62rem;color:rgba(255,255,255,.38);white-space:nowrap}
-.b2v{font-size:.62rem;color:var(--accent);font-weight:700;min-width:28px}
+/* font + align row */
+.b2l{font-size:.62rem;color:rgba(255,255,255,.4);white-space:nowrap}
+.b2v{font-size:.62rem;color:var(--accent);font-weight:700;min-width:26px}
 #ffs-r{width:70px;height:3px}
 #ffs-r::-webkit-slider-thumb{width:12px;height:12px}
 .sep{width:1px;height:18px;background:rgba(255,255,255,.12);margin:0 2px;flex-shrink:0}
-.tb2{padding:3px 8px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.5);font-size:.72rem;cursor:pointer;transition:all .15s}
+.tb2{padding:3px 9px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.5);font-size:.72rem;cursor:pointer;transition:all .15s}
 .tb2:hover{background:rgba(255,255,255,.12);color:#fff}
 .tb2.on{background:rgba(240,165,0,.22);border-color:rgba(240,165,0,.7);color:var(--accent)}
-
-/* script scroll */
-#fscroll{overflow:hidden;position:relative;flex:1;min-height:60px}
-#ftrack{padding:14px 18px 80px}
-#ftext{line-height:1.5;word-break:break-word;text-shadow:0 1px 10px rgba(0,0,0,.95);font-weight:500}
-#fguide{position:absolute;left:0;right:0;top:40%;height:2.5px;background:rgba(240,165,0,.7);pointer-events:none}
 
 /* countdown inside box */
 #cdo{display:none;position:absolute;inset:0;background:rgba(0,0,0,.75);z-index:30;align-items:center;justify-content:center;border-radius:12px}
@@ -164,7 +179,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 #cdo2{display:none;position:absolute;inset:0;background:rgba(0,0,0,.65);z-index:10;align-items:center;justify-content:center}
 #cdo2.show{display:flex}
 #cdn2{font-family:'Space Mono',monospace;font-size:clamp(80px,20vw,160px);color:var(--accent);font-weight:700}
-
 /* ══ FLASHCARD ══ */
 #fcov{display:none;position:fixed;inset:0;z-index:200;background:#000;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 #fcov.show{display:flex}
@@ -213,7 +227,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <button class="btn bo" onclick="document.getElementById('si').value=''">🗑 Clear</button>
     </div>
     <p style="font-size:.78rem;color:var(--muted);margin-top:6px;line-height:1.7">
-      <strong style="color:var(--text)">📹 Record with Camera</strong> — Drag any edge or corner to resize the box. Recording saves to Downloads.
+      <strong style="color:var(--text)">📹 Record with Camera</strong> — drag the bar at top to move box. Drag any edge or corner to resize. Controls are below the text.
     </p>
   </div>
   <div id="panel-flash" class="panel">
@@ -228,7 +242,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <div id="save-toast">💾 Saved to <strong>Downloads</strong> as .webm / .mp4</div>
 
-<!-- RECORDER SCREEN -->
+<!-- ══ RECORDER SCREEN ══ -->
 <div id="rec-screen">
   <video id="webcam-vid" autoplay muted playsinline></video>
   <button id="rclose" onclick="clrec()">✕</button>
@@ -244,47 +258,49 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="rh rh-sw" data-dir="sw"></div>
     <div class="rh rh-se" data-dir="se"></div>
 
-    <!-- ROW 1 -->
-    <div id="ftop">
-      <button class="ftb" id="btn-play">▶</button>
-      <button class="ftb" id="btn-rst">↺</button>
-      <div class="spdrow">
-        <label>Speed</label>
-        <input type="range" id="rspd" min="1" max="15" value="3">
-        <span class="spdval" id="rspdv">3</span>
-      </div>
-      <button class="ftb" id="btn-rec">⏺</button>
-      <div id="recdot"><div class="dot"></div>REC</div>
-      <div id="rtimer">0:00</div>
-    </div>
+    <!-- Thin drag handle at TOP -->
+    <div id="ftop-drag"></div>
 
-    <!-- ROW 2 -->
-    <div id="fbar2">
-      <span class="b2l">Size</span>
-      <input type="range" id="ffs-r" min="20" max="120" value="60">
-      <span class="b2v" id="ffsv">60</span>
-      <div class="sep"></div>
-      <button class="tb2 on" id="alL">L</button>
-      <button class="tb2" id="alC">C</button>
-      <button class="tb2" id="alR">R</button>
-      <div class="sep"></div>
-      <button class="tb2" id="bmh">⇔ H</button>
-      <button class="tb2" id="bmv">⇕ V</button>
-      <div class="sep"></div>
-      <button class="tb2 on" id="bgd">━ guide</button>
-    </div>
-
-    <!-- TEXT -->
+    <!-- SCRIPT TEXT — top of box -->
     <div id="fscroll">
-      <div id="fguide"></div>
       <div id="ftrack"><div id="ftext"></div></div>
+    </div>
+
+    <!-- CONTROLS — pinned below text -->
+    <div id="fcontrols">
+      <!-- Row 1: play, restart, speed, rec, timer -->
+      <div class="crow2">
+        <button class="ftb" id="btn-play">▶</button>
+        <button class="ftb" id="btn-rst" style="font-size:.85rem">↺</button>
+        <div class="spdrow">
+          <label>Speed</label>
+          <input type="range" id="rspd" min="1" max="15" value="3">
+          <span class="spdval" id="rspdv">3</span>
+        </div>
+        <button class="ftb" id="btn-rec" style="color:var(--red);font-size:.85rem">⏺ REC</button>
+        <div id="recdot"><div class="dot"></div>REC</div>
+        <div id="rtimer">0:00</div>
+      </div>
+      <!-- Row 2: font size, align, mirror -->
+      <div class="crow2">
+        <span class="b2l">Size</span>
+        <input type="range" id="ffs-r" min="20" max="120" value="60">
+        <span class="b2v" id="ffsv">60px</span>
+        <div class="sep"></div>
+        <button class="tb2 on" id="alL">L</button>
+        <button class="tb2" id="alC">C</button>
+        <button class="tb2" id="alR">R</button>
+        <div class="sep"></div>
+        <button class="tb2" id="bmh">⇔ Mirror H</button>
+        <button class="tb2" id="bmv">⇕ Mirror V</button>
+      </div>
     </div>
 
     <div id="cdo"><div id="cdn">3</div></div>
   </div>
 </div>
 
-<!-- FULLSCREEN PROMPTER -->
+<!-- ══ FULLSCREEN PROMPTER ══ -->
 <div id="pov">
   <div id="pbg"></div><div id="pguide"></div>
   <div id="pscroll"><div id="ptrack"><div id="ptext"></div></div></div>
@@ -307,7 +323,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   </div>
 </div>
 
-<!-- FLASHCARD -->
+<!-- ══ FLASHCARD ══ -->
 <div id="fcov" onclick="nfc()">
   <div id="fcbar"></div><div id="fctxt"></div>
   <div id="fcprog">1 / 1</div><div id="fchint">tap · ← →</div>
@@ -316,9 +332,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <script>
 // ─── HELPERS ──────────────────────────────────────────
-const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
-if (isIOS) document.getElementById('ios-note').style.display = 'block';
-let tc = '#fff';
+const isIOS=/iP(hone|od|ad)/.test(navigator.userAgent);
+if(isIOS)document.getElementById('ios-note').style.display='block';
+let tc='#fff';
 function stc(el){document.querySelectorAll('.cs').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');tc=el.dataset.c}
 function tset(){const b=document.getElementById('setb');b.style.display=b.style.display==='none'?'block':'none'}
 function swp(m,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+m).classList.add('active');btn.classList.add('active')}
@@ -333,15 +349,13 @@ function cdwn(oId,nId){
   })
 }
 
-// ─── FLOAT BOX STATE ──────────────────────────────────
-let fmh=false, fmv=false, fgdOn=true;
+// ─── FLOAT BOX: controls wiring ───────────────────────
+let fmh=false, fmv=false;
 
-function applyTx(){
-  document.getElementById('ftext').style.transform=`scale(${fmh?-1:1},${fmv?-1:1})`;
-}
+function applyTx(){document.getElementById('ftext').style.transform=`scale(${fmh?-1:1},${fmv?-1:1})`}
 
 document.getElementById('ffs-r').addEventListener('input',function(){
-  document.getElementById('ffsv').textContent=this.value;
+  document.getElementById('ffsv').textContent=this.value+'px';
   document.getElementById('ftext').style.fontSize=this.value+'px';
 });
 document.getElementById('rspd').addEventListener('input',function(){
@@ -350,21 +364,34 @@ document.getElementById('rspd').addEventListener('input',function(){
 document.getElementById('alL').addEventListener('click',function(){sa('left','alL')});
 document.getElementById('alC').addEventListener('click',function(){sa('center','alC')});
 document.getElementById('alR').addEventListener('click',function(){sa('right','alR')});
-function sa(a,id){['alL','alC','alR'].forEach(i=>document.getElementById(i).classList.remove('on'));document.getElementById(id).classList.add('on');document.getElementById('ftext').style.textAlign=a}
+function sa(a,id){
+  ['alL','alC','alR'].forEach(i=>document.getElementById(i).classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.getElementById('ftext').style.textAlign=a;
+}
 document.getElementById('bmh').addEventListener('click',function(){fmh=!fmh;this.classList.toggle('on',fmh);applyTx()});
 document.getElementById('bmv').addEventListener('click',function(){fmv=!fmv;this.classList.toggle('on',fmv);applyTx()});
-document.getElementById('bgd').addEventListener('click',function(){fgdOn=!fgdOn;this.classList.toggle('on',fgdOn);document.getElementById('fguide').style.display=fgdOn?'block':'none'});
 
 // ─── DRAG FLOAT BOX ───────────────────────────────────
 (function(){
-  const box=document.getElementById('fbox'), top=document.getElementById('ftop');
+  const box=document.getElementById('fbox');
+  const handle=document.getElementById('ftop-drag');
   let drag=false,ox=0,oy=0,sx=0,sy=0;
-  function snap(){const r=box.getBoundingClientRect();ox=r.left;oy=r.top;box.style.transform='none';box.style.left=ox+'px';box.style.top=oy+'px'}
-  function mv(cx,cy){if(!drag)return;box.style.left=Math.max(0,Math.min(window.innerWidth-box.offsetWidth,ox+(cx-sx)))+'px';box.style.top=Math.max(0,Math.min(window.innerHeight-60,oy+(cy-sy)))+'px'}
-  top.addEventListener('mousedown',function(e){if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;snap();drag=true;sx=e.clientX;sy=e.clientY;e.preventDefault()});
+  function snap(){
+    const r=box.getBoundingClientRect();
+    ox=r.left;oy=r.top;
+    box.style.transform='none';
+    box.style.left=ox+'px';box.style.top=oy+'px';
+  }
+  function mv(cx,cy){
+    if(!drag)return;
+    box.style.left=Math.max(0,Math.min(window.innerWidth-box.offsetWidth,ox+(cx-sx)))+'px';
+    box.style.top=Math.max(0,Math.min(window.innerHeight-60,oy+(cy-sy)))+'px';
+  }
+  handle.addEventListener('mousedown',e=>{snap();drag=true;sx=e.clientX;sy=e.clientY;e.preventDefault()});
   document.addEventListener('mousemove',e=>mv(e.clientX,e.clientY));
   document.addEventListener('mouseup',()=>drag=false);
-  top.addEventListener('touchstart',function(e){if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT')return;snap();drag=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  handle.addEventListener('touchstart',e=>{snap();drag=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
   document.addEventListener('touchmove',e=>{if(drag)mv(e.touches[0].clientX,e.touches[0].clientY)},{passive:true});
   document.addEventListener('touchend',()=>drag=false);
 })();
@@ -372,35 +399,39 @@ document.getElementById('bgd').addEventListener('click',function(){fgdOn=!fgdOn;
 // ─── RESIZE: ALL 8 HANDLES ────────────────────────────
 (function(){
   const box=document.getElementById('fbox');
-  let active=null, sx=0,sy=0, ox=0,oy=0, ow=0,oh=0;
+  let active=null,sx=0,sy=0,ox=0,oy=0,ow=0,oscrollH=0;
 
-  function getScrollH(){return document.getElementById('fscroll').offsetHeight}
-  // header rows height (fixed)
-  function headerH(){return document.getElementById('ftop').offsetHeight + document.getElementById('fbar2').offsetHeight}
+  function controlsH(){return document.getElementById('fcontrols').offsetHeight + document.getElementById('ftop-drag').offsetHeight}
 
   function startResize(dir,cx,cy){
-    active=dir; sx=cx; sy=cy;
+    active=dir;sx=cx;sy=cy;
     const r=box.getBoundingClientRect();
-    ox=r.left; oy=r.top; ow=r.width; oh=r.height;
+    ox=r.left;oy=r.top;ow=r.width;
+    oscrollH=document.getElementById('fscroll').offsetHeight;
     box.style.transform='none';
-    box.style.left=ox+'px'; box.style.top=oy+'px';
+    box.style.left=ox+'px';box.style.top=oy+'px';
   }
 
   function doResize(cx,cy){
     if(!active)return;
     const dx=cx-sx, dy=cy-sy;
-    let nl=ox, nt=oy, nw=ow, nh=oh;
+    let nl=ox,nt=oy,nw=ow,nScrollH=oscrollH;
 
-    if(active.includes('e')) nw=Math.max(240,ow+dx);
-    if(active.includes('s')) nh=Math.max(140,oh+dy);
-    if(active.includes('w')){nw=Math.max(240,ow-dx);nl=ox+ow-nw}
-    if(active.includes('n')){nh=Math.max(140,oh-dy);nt=oy+oh-nh}
+    // width changes
+    if(active==='e'||active==='ne'||active==='se') nw=Math.max(240,ow+dx);
+    if(active==='w'||active==='nw'||active==='sw'){nw=Math.max(240,ow-dx);nl=ox+ow-nw}
+
+    // height = change fscroll height
+    if(active==='s'||active==='se'||active==='sw') nScrollH=Math.max(60,oscrollH+dy);
+    if(active==='n'||active==='ne'||active==='nw'){
+      nScrollH=Math.max(60,oscrollH-dy);
+      nt=oy+(oscrollH-nScrollH);
+    }
 
     box.style.width=nw+'px';
     box.style.left=nl+'px';
     box.style.top=nt+'px';
-    const sh=Math.max(60,nh-headerH()-4);
-    document.getElementById('fscroll').style.height=sh+'px';
+    document.getElementById('fscroll').style.height=nScrollH+'px';
   }
 
   document.querySelectorAll('.rh').forEach(el=>{
@@ -417,12 +448,15 @@ document.getElementById('bgd').addEventListener('click',function(){fgdOn=!fgdOn;
 // ─── SCROLL ENGINE ────────────────────────────────────
 let ry=0, rplaying=false, rriv=null;
 
+// Speed multiplier: 0.2 instead of 0.5 — ~2.5x slower at same slider value
+const SPEED_MULT = 0.2;
+
 function startScroll(){
-  stopScroll(); rplaying=true;
+  stopScroll();rplaying=true;
   document.getElementById('btn-play').textContent='⏸';
   const c=document.getElementById('fscroll');
   rriv=setInterval(()=>{
-    ry+=parseFloat(document.getElementById('rspd').value)*0.5;
+    ry+=parseFloat(document.getElementById('rspd').value)*SPEED_MULT;
     c.scrollTop=ry;
     if(ry>=c.scrollHeight-c.clientHeight){
       if(gon('tlp')){ry=0;c.scrollTop=0}else stopScroll();
@@ -433,25 +467,19 @@ function stopScroll(){
   clearInterval(rriv);rriv=null;rplaying=false;
   document.getElementById('btn-play').textContent='▶';
 }
-
 document.getElementById('btn-play').addEventListener('click',()=>rplaying?stopScroll():startScroll());
 document.getElementById('btn-rst').addEventListener('click',()=>{
   ry=0;document.getElementById('fscroll').scrollTop=0;
   if(!rplaying)startScroll();
 });
 
-// ─── REC TIMER (independent from scroll) ──────────────
+// ─── REC TIMER ────────────────────────────────────────
 let rtiv=null, rs=0;
-function startRTimer(){
-  clearInterval(rtiv); rs=0;
-  document.getElementById('rtimer').textContent='0:00';
-  rtiv=setInterval(()=>{rs++;document.getElementById('rtimer').textContent=fmtTime(rs)},1000);
-}
+function startRTimer(){clearInterval(rtiv);rs=0;document.getElementById('rtimer').textContent='0:00';rtiv=setInterval(()=>{rs++;document.getElementById('rtimer').textContent=fmtTime(rs)},1000)}
 function stopRTimer(){clearInterval(rtiv);rtiv=null}
 
 // ─── WEBCAM RECORDING ─────────────────────────────────
 let camStream=null, mr=null, rch=[], isrec=false;
-
 document.getElementById('btn-rec').addEventListener('click',()=>isrec?stopRec():startRec());
 
 async function startRec(){
@@ -468,7 +496,7 @@ async function startRec(){
     isrec=true;
     document.getElementById('btn-rec').classList.add('rcon');
     document.getElementById('recdot').classList.add('show');
-    startRTimer(); // ← timer starts HERE with recording
+    startRTimer();
   }catch(e){alert('Microphone access needed to record.\n\n'+e.message)}
 }
 function stopRec(){
@@ -499,18 +527,19 @@ async function lwCam(){
     document.getElementById('webcam-vid').srcObject=camStream;
   }catch(e){alert('Camera access denied: '+e.message);return}
 
-  // Reset box position & size
+  // Reset box
   const box=document.getElementById('fbox');
-  box.style.cssText='position:absolute;top:20px;left:50%;width:580px;height:300px;transform:translateX(-50%);background:rgba(0,0,0,.82);backdrop-filter:blur(10px);border-radius:14px;border:1.5px solid rgba(255,255,255,.18);display:flex;flex-direction:column;min-width:240px;min-height:140px';
-  document.getElementById('fscroll').style.height='';
+  box.style.transform='translateX(-50%)';
+  box.style.left='50%';box.style.top='20px';box.style.width='580px';
+  document.getElementById('fscroll').style.height='200px';
 
   // Sync settings
   const fs=document.getElementById('fsi').value;
   document.getElementById('ffs-r').value=fs;
-  document.getElementById('ffsv').textContent=fs;
+  document.getElementById('ffsv').textContent=fs+'px';
   document.getElementById('ftext').style.fontSize=fs+'px';
   document.getElementById('ftext').style.color=tc;
-  document.getElementById('ftext').innerHTML=script.replace(/\n/g,'<br>');
+  document.getElementById('ftext').innerHTML=document.getElementById('si').value.replace(/\n/g,'<br>');
   document.getElementById('rspd').value=document.getElementById('spdi').value;
   document.getElementById('rspdv').textContent=document.getElementById('spdi').value;
 
@@ -522,7 +551,6 @@ async function lwCam(){
   document.getElementById('bmv').classList.remove('on');
   ['alL','alC','alR'].forEach(i=>document.getElementById(i).classList.remove('on'));
   document.getElementById('alL').classList.add('on');
-  fgdOn=true;document.getElementById('fguide').style.display='block';document.getElementById('bgd').classList.add('on');
   ry=0;document.getElementById('fscroll').scrollTop=0;
   stopScroll();stopRTimer();rs=0;document.getElementById('rtimer').textContent='0:00';
 
@@ -530,10 +558,8 @@ async function lwCam(){
   if(gon('tcd'))await cdwn('cdo','cdn');
   startScroll();
 }
-
 function clrec(){
-  stopScroll();
-  if(isrec)stopRec();
+  stopScroll();if(isrec)stopRec();
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}
   document.getElementById('webcam-vid').srcObject=null;
   document.getElementById('rec-screen').classList.remove('show');
@@ -550,14 +576,13 @@ async function lpOnly(){
   document.getElementById('pspd').value=document.getElementById('spdi').value;
   pmr=false;document.getElementById('pov').classList.remove('mh');document.getElementById('pmr').classList.remove('active');
   pgdP=true;document.getElementById('pguide').style.display='block';document.getElementById('pgd').classList.add('active');
-  py=0;document.getElementById('pscroll').scrollTop=0;
-  ps=0;document.getElementById('ptimer').textContent='0:00';
+  py=0;document.getElementById('pscroll').scrollTop=0;ps=0;document.getElementById('ptimer').textContent='0:00';
   ppl=false;document.getElementById('pplay').textContent='▶';
   document.getElementById('pov').classList.add('show');
   if(gon('tcd'))await cdwn('cdo2','cdn2');
   spp();
 }
-function spp(){stpp();ppl=true;document.getElementById('pplay').textContent='⏸';sPT();const c=document.getElementById('pscroll');ppiv=setInterval(()=>{py+=parseFloat(document.getElementById('pspd').value)*0.5;c.scrollTop=py;if(py>=c.scrollHeight-c.clientHeight){gon('tlp')?(py=0,c.scrollTop=0):stpp()}},16)}
+function spp(){stpp();ppl=true;document.getElementById('pplay').textContent='⏸';sPT();const c=document.getElementById('pscroll');ppiv=setInterval(()=>{py+=parseFloat(document.getElementById('pspd').value)*SPEED_MULT;c.scrollTop=py;if(py>=c.scrollHeight-c.clientHeight){gon('tlp')?(py=0,c.scrollTop=0):stpp()}},16)}
 function stpp(){clearInterval(ppiv);ppiv=null;ppl=false;document.getElementById('pplay').textContent='▶';stPT()}
 function tpp(){ppl?stpp():spp()}
 function prst(){py=0;document.getElementById('pscroll').scrollTop=0;ps=0;if(!ppl)spp()}
