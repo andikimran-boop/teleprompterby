@@ -268,10 +268,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
     <!-- CONTROLS — pinned below text -->
     <div id="fcontrols">
-      <!-- Row 1: play, restart, speed, rec, timer -->
+      <!-- Row 1: play, restart, nudge, speed, rec, timer -->
       <div class="crow2">
         <button class="ftb" id="btn-play">▶</button>
-        <button class="ftb" id="btn-rst" style="font-size:.85rem">↺</button>
+        <button class="ftb" id="btn-rst" style="font-size:.85rem" title="Restart">↺</button>
+        <button class="ftb" id="btn-up" style="font-size:.85rem" title="Scroll back up (↑)">↑</button>
+        <button class="ftb" id="btn-dn" style="font-size:.85rem" title="Scroll forward (↓)">↓</button>
         <div class="spdrow">
           <label>Speed</label>
           <input type="range" id="rspd" min="1" max="15" value="3">
@@ -473,6 +475,38 @@ document.getElementById('btn-rst').addEventListener('click',()=>{
   if(!rplaying)startScroll();
 });
 
+// ── Nudge: jump 80px up or down, keep auto-scroll position in sync ──
+const NUDGE = 80;
+document.getElementById('btn-up').addEventListener('click',()=>{
+  ry=Math.max(0,ry-NUDGE);
+  document.getElementById('fscroll').scrollTop=ry;
+});
+document.getElementById('btn-dn').addEventListener('click',()=>{
+  const c=document.getElementById('fscroll');
+  ry=Math.min(c.scrollHeight-c.clientHeight,ry+NUDGE);
+  c.scrollTop=ry;
+});
+
+// ── Mouse wheel over the float box syncs ry ──
+document.getElementById('fscroll').addEventListener('wheel',function(e){
+  e.preventDefault();
+  ry=Math.max(0,Math.min(this.scrollHeight-this.clientHeight, ry+e.deltaY));
+  this.scrollTop=ry;
+},{passive:false});
+
+// ── Touch swipe on the script box syncs ry ──
+(function(){
+  const c=document.getElementById('fscroll');
+  let ty=0;
+  c.addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
+  c.addEventListener('touchmove',e=>{
+    const dy=ty-e.touches[0].clientY;
+    ty=e.touches[0].clientY;
+    ry=Math.max(0,Math.min(c.scrollHeight-c.clientHeight,ry+dy));
+    c.scrollTop=ry;
+  },{passive:true});
+})();
+
 // ─── REC TIMER ────────────────────────────────────────
 let rtiv=null, rs=0;
 function startRTimer(){clearInterval(rtiv);rs=0;document.getElementById('rtimer').textContent='0:00';rtiv=setInterval(()=>{rs++;document.getElementById('rtimer').textContent=fmtTime(rs)},1000)}
@@ -617,7 +651,10 @@ document.addEventListener('keydown',e=>{
   }
   if(document.getElementById('rec-screen').classList.contains('show')){
     if(e.key===' '){e.preventDefault();rplaying?stopScroll():startScroll()}
-    if(e.key==='Escape')clrec();return
+    if(e.key==='Escape')clrec();
+    if(e.key==='ArrowUp'){e.preventDefault();const c=document.getElementById('fscroll');ry=Math.max(0,ry-NUDGE);c.scrollTop=ry}
+    if(e.key==='ArrowDown'){e.preventDefault();const c=document.getElementById('fscroll');ry=Math.min(c.scrollHeight-c.clientHeight,ry+NUDGE);c.scrollTop=ry}
+    return
   }
   if(document.getElementById('pov').classList.contains('show')){
     if(e.key===' '){e.preventDefault();tpp()}
