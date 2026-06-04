@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PrompterPro By Andik</title>
+<title>PrompterPro</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0a0a;--surface:#141414;--border:#2a2a2a;--accent:#f0a500;--red:#e03030;--text:#f0ece4;--muted:#666;--radius:10px}
@@ -42,49 +42,117 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .tog.on{background:var(--accent)}
 .tog::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
 .tog.on::after{transform:translateX(20px)}
-/* iOS warning */
 #ios-note{display:none;background:rgba(224,48,48,.15);border:1px solid rgba(224,48,48,.4);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.85rem;line-height:1.5;color:#ffaaaa}
-/* RECORDER SCREEN */
-#rec-screen{display:none;position:fixed;inset:0;z-index:300;background:#000;flex-direction:column}
-#rec-screen.show{display:flex}
+
+/* ══ RECORDER SCREEN ══ */
+#rec-screen{display:none;position:fixed;inset:0;z-index:300;background:#000}
+#rec-screen.show{display:block}
 #webcam-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-/* FLOAT BOX */
-#fbox{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:min(92vw,680px);background:rgba(0,0,0,.75);backdrop-filter:blur(8px);border-radius:14px;border:1.5px solid rgba(255,255,255,.12);overflow:hidden;cursor:grab;user-select:none;touch-action:none}
-#fbox.drag{cursor:grabbing}
-#fhandle{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(240,165,0,.12);border-bottom:1px solid rgba(255,255,255,.08);font-size:.7rem;color:rgba(255,255,255,.4);letter-spacing:1px}
-.rsbtn{padding:2px 9px;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.5);font-size:.7rem;cursor:pointer}
-.rsbtn:hover{background:rgba(255,255,255,.1);color:#fff}
-#fscroll{height:160px;overflow:hidden;position:relative}
-#ftrack{padding:14px 20px 80px}
-#ftext{line-height:1.45;text-shadow:0 1px 8px rgba(0,0,0,.9);font-weight:500}
+
+/* ══ FLOAT BOX ══ */
+#fbox{
+  position:absolute;
+  top:40px;left:50%;transform:translateX(-50%);
+  width:560px;min-width:220px;min-height:120px;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(10px);
+  border-radius:14px;
+  border:1.5px solid rgba(255,255,255,.15);
+  display:flex;flex-direction:column;
+  user-select:none;
+  touch-action:none;
+  overflow:visible;
+}
+
+/* Top drag bar with play controls */
+#ftop{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;
+  background:rgba(0,0,0,.5);
+  border-radius:12px 12px 0 0;
+  border-bottom:1px solid rgba(255,255,255,.1);
+  cursor:grab;gap:6px;flex-shrink:0;
+}
+#ftop.dragging{cursor:grabbing}
+.ftb{
+  width:34px;height:34px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);
+  color:#fff;font-size:.95rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.ftb:hover{background:rgba(255,255,255,.2)}
+.ftb.on{background:var(--accent);border-color:var(--accent);color:#000}
+.ftb.rcon{background:var(--red);border-color:var(--red);animation:rp 1.5s infinite}
+@keyframes rp{0%,100%{box-shadow:0 0 0 0 rgba(224,48,48,.5)}50%{box-shadow:0 0 0 8px rgba(224,48,48,0)}}
+
+/* Speed mini-slider in top bar */
+.fspd{display:flex;align-items:center;gap:5px;flex:1;min-width:60px;max-width:140px}
+.fspd label{font-size:.65rem;color:rgba(255,255,255,.45);white-space:nowrap}
+.fspd input[type=range]{height:3px}
+.fspd input[type=range]::-webkit-slider-thumb{width:12px;height:12px}
+
+/* Font size & align controls — second row */
+#fbar2{
+  display:flex;align-items:center;gap:6px;padding:5px 10px;
+  background:rgba(0,0,0,.35);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  flex-wrap:wrap;flex-shrink:0;
+}
+.fbar2-lbl{font-size:.62rem;color:rgba(255,255,255,.4);white-space:nowrap}
+.fbar2-val{font-size:.62rem;color:var(--accent);font-weight:700;min-width:26px}
+.fbar2 input[type=range]{height:3px;width:80px}
+.fbar2 input[type=range]::-webkit-slider-thumb{width:12px;height:12px}
+.alb{
+  padding:3px 7px;border-radius:5px;border:1px solid rgba(255,255,255,.2);
+  background:transparent;color:rgba(255,255,255,.5);font-size:.7rem;cursor:pointer;
+}
+.alb.on{background:rgba(240,165,0,.25);border-color:var(--accent);color:var(--accent)}
+.divider{width:1px;height:20px;background:rgba(255,255,255,.12);margin:0 2px;flex-shrink:0}
+
+/* Scrolling text */
+#fscroll{flex:1;overflow:hidden;position:relative;border-radius:0 0 12px 12px;min-height:80px}
+#ftrack{padding:14px 18px 80px}
+#ftext{line-height:1.45;text-shadow:0 1px 10px rgba(0,0,0,.95);font-weight:500;transition:text-align .1s}
 #fguide{position:absolute;left:0;right:0;top:40%;height:2px;background:rgba(240,165,0,.65);pointer-events:none}
-/* REC CONTROLS */
-#rcontrols{position:absolute;bottom:0;left:0;right:0;padding:14px 20px;background:linear-gradient(transparent,rgba(0,0,0,.88));display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.rb{width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);backdrop-filter:blur(6px);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.rb:hover{background:rgba(255,255,255,.2)}
-.rb.active{background:var(--accent);border-color:var(--accent);color:#000}
-.rb.recact{background:var(--red);border-color:var(--red);animation:rp 1.5s infinite}
-@keyframes rp{0%,100%{box-shadow:0 0 0 0 rgba(224,48,48,.5)}50%{box-shadow:0 0 0 10px rgba(224,48,48,0)}}
-.sprow{display:flex;align-items:center;gap:10px;flex:1;min-width:140px}
-.sprow label{font-size:.72rem;color:rgba(255,255,255,.5);white-space:nowrap}
-#rtimer{font-family:'Space Mono',monospace;font-size:.85rem;color:rgba(255,255,255,.5)}
-#recdot{display:none;align-items:center;gap:5px;font-size:.75rem;font-weight:700;color:var(--red);letter-spacing:1px}
+
+/* Resize handle bottom-right */
+#fresize{
+  position:absolute;bottom:-2px;right:-2px;
+  width:22px;height:22px;cursor:nwse-resize;
+  display:flex;align-items:flex-end;justify-content:flex-end;
+  padding:3px;z-index:10;
+}
+#fresize svg{opacity:.5;transition:opacity .15s}
+#fresize:hover svg{opacity:1}
+
+/* REC dot label */
+#recdot{display:none;align-items:center;gap:5px;font-size:.7rem;font-weight:700;color:var(--red);letter-spacing:1px}
 #recdot.show{display:flex}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:rb 1s infinite}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:rb 1s infinite}
 @keyframes rb{0%,100%{opacity:1}50%{opacity:.1}}
+
+/* Timer */
+#rtimer{font-family:'Space Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.45)}
+
+/* Close button top-right of recorder */
+#rclose{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(0,0,0,.5);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10}
+
 /* COUNTDOWN */
-#cdo{display:none;position:absolute;inset:0;background:rgba(0,0,0,.65);z-index:10;align-items:center;justify-content:center}
+#cdo{display:none;position:absolute;inset:0;background:rgba(0,0,0,.65);z-index:20;align-items:center;justify-content:center;border-radius:12px}
 #cdo.show{display:flex}
-#cdn{font-family:'Space Mono',monospace;font-size:clamp(80px,20vw,160px);color:var(--accent);font-weight:700;text-shadow:0 0 60px rgba(240,165,0,.5)}
-/* FULLSCREEN PROMPTER */
-#pov{display:none;position:fixed;inset:0;z-index:200;flex-direction:column}
-#pov.show{display:flex}
+#cdn{font-family:'Space Mono',monospace;font-size:clamp(60px,15vw,130px);color:var(--accent);font-weight:700;text-shadow:0 0 50px rgba(240,165,0,.5)}
+
+/* ══ FULLSCREEN PROMPTER ══ */
+#pov{display:none;position:fixed;inset:0;z-index:200}
+#pov.show{display:block}
 #pbg{position:absolute;inset:0;background:#000}
+#pguide{position:absolute;left:0;right:0;height:3px;background:rgba(240,165,0,.7);pointer-events:none;top:40%}
 #pscroll{position:absolute;inset:0;overflow:hidden}
 #ptrack{padding:60vh 8% 60vh;width:100%}
 #ptext{line-height:1.5;word-break:break-word;text-shadow:0 2px 20px rgba(0,0,0,.8)}
 .mh #ptext{transform:scaleX(-1)}
-#pguide{position:absolute;left:0;right:0;height:3px;background:rgba(240,165,0,.7);pointer-events:none;top:40%}
 #pctrls{position:absolute;bottom:0;left:0;right:0;padding:14px 20px;background:linear-gradient(transparent,rgba(0,0,0,.9));display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .pb{width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);backdrop-filter:blur(8px);color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .pb:hover{background:rgba(255,255,255,.25)}.pb.active{background:var(--accent);border-color:var(--accent);color:#000}
@@ -93,7 +161,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 #cdo2{display:none;position:absolute;inset:0;background:rgba(0,0,0,.65);z-index:10;align-items:center;justify-content:center}
 #cdo2.show{display:flex}
 #cdn2{font-family:'Space Mono',monospace;font-size:clamp(80px,20vw,160px);color:var(--accent);font-weight:700}
-/* FLASHCARD */
+
+/* ══ FLASHCARD ══ */
 #fcov{display:none;position:fixed;inset:0;z-index:200;background:#000;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none}
 #fcov.show{display:flex}
 #fcbar{position:absolute;top:0;left:0;height:3px;background:var(--accent);transition:width .3s}
@@ -101,7 +170,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 #fctxt.fade{opacity:0}
 #fcprog{position:absolute;bottom:80px;font-family:'Space Mono',monospace;font-size:.8rem;color:rgba(255,255,255,.35)}
 #fchint{position:absolute;bottom:30px;font-size:.75rem;color:rgba(255,255,255,.2)}
-@media(max-width:600px){header{padding:10px 14px}.logo{font-size:.95rem}.mode-tab{padding:5px 10px;font-size:.75rem}main{padding:14px}.cgrid{grid-template-columns:1fr 1fr}.btn{padding:10px 16px;font-size:.85rem}#fbox{width:95vw}}
+.sprow{display:flex;align-items:center;gap:10px;flex:1;min-width:130px}
+.sprow label{font-size:.72rem;color:rgba(255,255,255,.5);white-space:nowrap}
+@media(max-width:600px){
+  header{padding:10px 14px}.logo{font-size:.95rem}
+  .mode-tab{padding:5px 10px;font-size:.75rem}
+  main{padding:14px}.cgrid{grid-template-columns:1fr 1fr}
+  .btn{padding:10px 16px;font-size:.85rem}
+  #fbox{width:95vw!important}
+}
 </style>
 </head>
 <body>
@@ -113,15 +190,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   </div>
 </header>
 <main>
-  <textarea id="si" placeholder="Paste your script here...&#10;&#10;Use Scroll mode for auto-scroll, or Flashcard to show chunks one at a time."></textarea>
-  <div id="ios-note">⚠️ <strong>iPhone detected:</strong> Safari does not support in-browser webcam recording. Use Prompter Only and record with your iPhone's built-in screen recorder or camera app.</div>
+  <textarea id="si" placeholder="Paste your script here...&#10;&#10;Scroll mode = smooth auto-scroll. Flashcard mode = show chunks one at a time."></textarea>
+  <div id="ios-note">⚠️ <strong>iPhone:</strong> Webcam recording not supported in Safari. Use Prompter Only and record with iPhone's screen recorder.</div>
 
-  <!-- SCROLL PANEL -->
   <div id="panel-scroll" class="panel active">
     <div class="cgrid">
-      <div class="cg"><div class="cl">Font Size <span id="lfs">60px</span></div><input type="range" min="24" max="120" value="60" oninput="document.getElementById('lfs').textContent=this.value+'px'"></div>
-      <div class="cg"><div class="cl">Speed <span id="lsp">3</span></div><input type="range" id="spd" min="1" max="15" value="3" oninput="document.getElementById('lsp').textContent=this.value"></div>
-      <div class="cg"><div class="cl">Box Height <span id="lbh">160px</span></div><input type="range" id="bxh" min="80" max="420" value="160" oninput="document.getElementById('lbh').textContent=this.value+'px'"></div>
+      <div class="cg"><div class="cl">Font Size <span id="lfs">60px</span></div><input type="range" id="fsi" min="24" max="120" value="60" oninput="document.getElementById('lfs').textContent=this.value+'px'"></div>
+      <div class="cg"><div class="cl">Speed <span id="lsp">3</span></div><input type="range" id="spdi" min="1" max="15" value="3" oninput="document.getElementById('lsp').textContent=this.value"></div>
       <div class="cg"><div class="cl">Text Color</div><div class="crow">
         <div class="cs sel" style="background:#fff" data-c="#fff" onclick="stc(this)"></div>
         <div class="cs" style="background:#f0a500" data-c="#f0a500" onclick="stc(this)"></div>
@@ -132,8 +207,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="setsec">
       <div class="seth" onclick="tset()">⚙️ Advanced Options</div>
       <div class="setb" id="setb">
-        <div class="setr"><span>Mirror text (teleprompter glass)</span><div class="tog" id="tmr" onclick="this.classList.toggle('on')"></div></div>
-        <div class="setr"><span>Show reading guide line</span><div class="tog on" id="tgd" onclick="this.classList.toggle('on')"></div></div>
         <div class="setr"><span>3s countdown before start</span><div class="tog on" id="tcd" onclick="this.classList.toggle('on')"></div></div>
         <div class="setr"><span>Auto-restart at end</span><div class="tog" id="tlp" onclick="this.classList.toggle('on')"></div></div>
       </div>
@@ -145,11 +218,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     </div>
     <p style="font-size:.78rem;color:var(--muted);margin-top:6px;line-height:1.7">
       <strong style="color:var(--text)">▶ Prompter Only</strong> — fullscreen scroll, no camera.<br>
-      <strong style="color:var(--text)">📹 Record with Camera</strong> — floating script box over your live webcam. Records webcam + mic directly.
+      <strong style="color:var(--text)">📹 Record with Camera</strong> — floating script box over webcam. All controls on the box itself.
     </p>
   </div>
 
-  <!-- FLASHCARD PANEL -->
   <div id="panel-flash" class="panel">
     <div class="cgrid">
       <div class="cg"><div class="cl">Font Size <span id="lfcfs">56px</span></div><input type="range" id="fcfs" min="20" max="100" value="56" oninput="document.getElementById('lfcfs').textContent=this.value+'px'"></div>
@@ -158,47 +230,72 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="brow" style="margin-top:16px">
       <button class="btn bp" onclick="lfc()">🃏 Start Flashcards</button>
     </div>
-    <p style="margin-top:10px;font-size:.82rem;color:var(--muted);line-height:1.5">Tap anywhere or use ← → arrow keys to advance.</p>
+    <p style="margin-top:10px;font-size:.82rem;color:var(--muted);line-height:1.5">Tap anywhere or ← → arrow keys to advance.</p>
   </div>
 </main>
 
-<!-- RECORDER SCREEN -->
+<!-- ══ RECORDER SCREEN ══ -->
 <div id="rec-screen">
   <video id="webcam-vid" autoplay muted playsinline></video>
-  <div id="cdo"><div id="cdn">3</div></div>
-  <!-- Floating box -->
+  <button id="rclose" onclick="clrec()">✕</button>
+
+  <!-- Float box -->
   <div id="fbox">
-    <div id="fhandle">
-      <span>⠿ drag to reposition</span>
-      <div style="display:flex;gap:6px">
-        <button class="rsbtn" onclick="rsbox(-50)">↑ Shorter</button>
-        <button class="rsbtn" onclick="rsbox(50)">↓ Taller</button>
-      </div>
+    <!-- TOP BAR: drag + play controls -->
+    <div id="ftop">
+      <!-- Play/Pause -->
+      <button class="ftb" id="rplay" onclick="trplay()" title="Play / Pause">▶</button>
+      <!-- Restart -->
+      <button class="ftb" onclick="rreset()" title="Restart" style="font-size:.8rem">↺</button>
+      <!-- Speed slider inline -->
+      <div class="fspd"><label>Spd</label><input type="range" id="rspd" min="1" max="15" value="3" oninput="document.getElementById('rspdv').textContent=this.value"><span id="rspdv" style="font-size:.62rem;color:var(--accent);min-width:14px">3</span></div>
+      <!-- REC button -->
+      <button class="ftb" id="rrecbtn" onclick="trcam()" title="Record webcam" style="font-size:.7rem;color:var(--red)">⏺</button>
+      <!-- REC dot -->
+      <div id="recdot"><div class="dot"></div></div>
+      <!-- Timer -->
+      <div id="rtimer">0:00</div>
     </div>
+
+    <!-- SECOND BAR: font size + align + mirror -->
+    <div id="fbar2">
+      <span class="fbar2-lbl">Size</span>
+      <input type="range" id="flive-fs" min="20" max="120" value="60" oninput="updFS(this.value)">
+      <span class="fbar2-val" id="flive-fsv">60px</span>
+      <div class="divider"></div>
+      <!-- Alignment -->
+      <button class="alb on" id="alL" onclick="setAlign('left',this)" title="Left">⬤⠀⠀</button>
+      <button class="alb" id="alC" onclick="setAlign('center',this)" title="Center">⠀⬤⠀</button>
+      <button class="alb" id="alR" onclick="setAlign('right',this)" title="Right">⠀⠀⬤</button>
+      <div class="divider"></div>
+      <!-- Mirror H -->
+      <button class="alb" id="bmh" onclick="trmh()" title="Mirror horizontal ⇔">⇔</button>
+      <!-- Mirror V -->
+      <button class="alb" id="bmv" onclick="trmv()" title="Mirror vertical ⇕">⇕</button>
+      <div class="divider"></div>
+      <!-- Guide line -->
+      <button class="alb on" id="bgd" onclick="trgd()" title="Guide line">━</button>
+    </div>
+
+    <!-- SCRIPT TEXT -->
     <div id="fscroll">
       <div id="fguide"></div>
       <div id="ftrack"><div id="ftext"></div></div>
     </div>
-  </div>
-  <!-- Controls -->
-  <div id="rcontrols">
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="rb" id="rplay" onclick="trplay()">▶</button>
-      <button class="rb" onclick="rreset()">↺</button>
-      <button class="rb" id="rgd" onclick="trgd()" style="font-size:.7rem;background:rgba(240,165,0,.15);border-color:rgba(240,165,0,.35)">━</button>
-      <button class="rb" id="rmr" onclick="trmr()">⇔</button>
-      <div id="recdot"><div class="dot"></div>REC</div>
+
+    <!-- Resize handle -->
+    <div id="fresize">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M13 1L1 13M13 7L7 13M13 13L13 13" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
     </div>
-    <div class="sprow"><label>Speed</label><input type="range" id="rspd" min="1" max="15" value="3"></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div id="rtimer">0:00</div>
-      <button class="rb" id="rrecbtn" onclick="trcam()" style="font-size:.75rem;color:var(--red);border-color:rgba(224,48,48,.35)">⏺</button>
-      <button class="xbtn" onclick="clrec()">✕</button>
-    </div>
+
+    <!-- Countdown inside box -->
+    <div id="cdo"><div id="cdn">3</div></div>
   </div>
 </div>
 
-<!-- FULLSCREEN PROMPTER -->
+<!-- ══ FULLSCREEN PROMPTER ══ -->
 <div id="pov">
   <div id="pbg"></div>
   <div id="pguide"></div>
@@ -216,7 +313,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   </div>
 </div>
 
-<!-- FLASHCARD -->
+<!-- ══ FLASHCARD ══ -->
 <div id="fcov" onclick="nfc()">
   <div id="fcbar"></div>
   <div id="fctxt"></div>
@@ -226,51 +323,165 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 </div>
 
 <script>
+// ─── GLOBALS ───────────────────────────────────────────
 const isIOS=/iP(hone|od|ad)/.test(navigator.userAgent);
 if(isIOS)document.getElementById('ios-note').style.display='block';
 
 let tc='#fff';
+let fmh=false,fmv=false,fgd=true,falign='left';
+
 function stc(el){document.querySelectorAll('.cs').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');tc=el.dataset.c}
 function tset(){const b=document.getElementById('setb');b.style.display=b.style.display==='none'?'block':'none'}
 function swp(m,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+m).classList.add('active');btn.classList.add('active')}
 function gon(id){return document.getElementById(id).classList.contains('on')}
 
-function cdwn(oId,nId){return new Promise(r=>{const o=document.getElementById(oId),n=document.getElementById(nId);o.classList.add('show');let c=3;n.textContent=c;const iv=setInterval(()=>{c--;if(c<=0){clearInterval(iv);o.classList.remove('show');r()}else n.textContent=c},1000)})}
+function cdwn(oId,nId){
+  return new Promise(r=>{
+    const o=document.getElementById(oId),n=document.getElementById(nId);
+    o.classList.add('show');let c=3;n.textContent=c;
+    const iv=setInterval(()=>{c--;if(c<=0){clearInterval(iv);o.classList.remove('show');r()}else n.textContent=c},1000)
+  })
+}
 
-// ── RECORDER + FLOAT BOX ──
-let ry=0,rplay=false,rriv=null,camst=null,mr=null,rch=[],isrec=false,rtiv=null,rs=0,fmr=false,fgd=true;
+// ─── FLOAT BOX CONTROLS ────────────────────────────────
+function updFS(v){
+  document.getElementById('flive-fsv').textContent=v+'px';
+  document.getElementById('ftext').style.fontSize=v+'px';
+}
+function setAlign(a,btn){
+  falign=a;
+  document.querySelectorAll('.alb[id^=al]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('ftext').style.textAlign=a;
+  document.getElementById('ftrack').style.textAlign=a;
+}
+function applyTransform(){
+  const sx=fmh?-1:1, sy=fmv?-1:1;
+  document.getElementById('ftext').style.transform=`scale(${sx},${sy})`;
+}
+function trmh(){fmh=!fmh;document.getElementById('bmh').classList.toggle('on',fmh);applyTransform()}
+function trmv(){fmv=!fmv;document.getElementById('bmv').classList.toggle('on',fmv);applyTransform()}
+function trgd(){fgd=!fgd;document.getElementById('fguide').style.display=fgd?'block':'none';document.getElementById('bgd').classList.toggle('on',fgd)}
+
+// ─── DRAG FLOAT BOX ────────────────────────────────────
+(function(){
+  const box=document.getElementById('fbox'),top=document.getElementById('ftop');
+  let drag=false,ox=0,oy=0,sx=0,sy=0;
+  function pos(){const r=box.getBoundingClientRect();return{x:r.left,y:r.top}}
+  function start(cx,cy){
+    drag=true;top.classList.add('dragging');
+    const p=pos();ox=p.x;oy=p.y;sx=cx;sy=cy;
+    box.style.transform='none';box.style.left=ox+'px';box.style.top=oy+'px';
+  }
+  function move(cx,cy){
+    if(!drag)return;
+    box.style.left=Math.max(0,Math.min(window.innerWidth-box.offsetWidth,ox+(cx-sx)))+'px';
+    box.style.top=Math.max(0,Math.min(window.innerHeight-80,oy+(cy-sy)))+'px';
+  }
+  function end(){drag=false;top.classList.remove('dragging')}
+  top.addEventListener('mousedown',e=>{if(e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT'){start(e.clientX,e.clientY);e.preventDefault()}});
+  document.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
+  document.addEventListener('mouseup',end);
+  top.addEventListener('touchstart',e=>{if(e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT')start(e.touches[0].clientX,e.touches[0].clientY)},{passive:true});
+  document.addEventListener('touchmove',e=>{if(drag)move(e.touches[0].clientX,e.touches[0].clientY)},{passive:true});
+  document.addEventListener('touchend',end);
+})();
+
+// ─── RESIZE FLOAT BOX (bottom-right drag) ──────────────
+(function(){
+  const box=document.getElementById('fbox'),handle=document.getElementById('fresize');
+  let resizing=false,startX=0,startY=0,startW=0,startH=0;
+  handle.addEventListener('mousedown',e=>{
+    resizing=true;startX=e.clientX;startY=e.clientY;
+    startW=box.offsetWidth;startH=box.offsetHeight;
+    e.preventDefault();e.stopPropagation();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!resizing)return;
+    const nw=Math.max(220,startW+(e.clientX-startX));
+    const nh=Math.max(120,startH+(e.clientY-startY));
+    box.style.width=nw+'px';
+    document.getElementById('fscroll').style.height=Math.max(80,nh-120)+'px';
+  });
+  document.addEventListener('mouseup',()=>resizing=false);
+  // Touch resize
+  handle.addEventListener('touchstart',e=>{
+    resizing=true;startX=e.touches[0].clientX;startY=e.touches[0].clientY;
+    startW=box.offsetWidth;startH=box.offsetHeight;e.stopPropagation();
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!resizing)return;
+    const nw=Math.max(220,startW+(e.touches[0].clientX-startX));
+    const nh=Math.max(120,startH+(e.touches[0].clientY-startY));
+    box.style.width=nw+'px';
+    document.getElementById('fscroll').style.height=Math.max(80,nh-120)+'px';
+  },{passive:true});
+  document.addEventListener('touchend',()=>resizing=false);
+})();
+
+// ─── RECORDER + SCROLL ─────────────────────────────────
+let ry=0,rplay=false,rriv=null,camst=null,mr=null,rch=[],isrec=false,rtiv=null,rs=0;
 
 async function lwCam(){
   const sc=document.getElementById('si').value.trim();
   if(!sc){alert('Please enter your script first.');return}
-  if(isIOS){alert('iPhone does not support webcam recording in the browser.\n\nOpening Prompter Only mode instead.');lpOnly();return}
+  if(isIOS){alert('iPhone Safari cannot record webcam.\n\nOpening Prompter Only mode — record using your iPhone screen recorder.');lpOnly();return}
   try{
     camst=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
     document.getElementById('webcam-vid').srcObject=camst;
   }catch(e){alert('Camera access denied: '+e.message);return}
-  const fs=document.querySelector('#panel-scroll .cgrid input[type=range]').value;
-  const bh=document.getElementById('bxh').value;
+
+  // Sync settings from setup panel
+  const fs=document.getElementById('fsi').value;
+  document.getElementById('flive-fs').value=fs;
+  document.getElementById('flive-fsv').textContent=fs+'px';
   document.getElementById('ftext').style.fontSize=fs+'px';
   document.getElementById('ftext').style.color=tc;
-  document.getElementById('ftext').innerHTML=sc.replace(/\n/g,'<br>');
-  document.getElementById('fscroll').style.height=bh+'px';
-  document.getElementById('rspd').value=document.getElementById('spd').value;
-  fgd=gon('tgd');document.getElementById('fguide').style.display=fgd?'block':'none';
-  fmr=gon('tmr');document.getElementById('ftext').style.transform=fmr?'scaleX(-1)':'';
+  document.getElementById('ftext').innerHTML=document.getElementById('si').value.replace(/\n/g,'<br>');
+  document.getElementById('rspd').value=document.getElementById('spdi').value;
+  document.getElementById('rspdv').textContent=document.getElementById('spdi').value;
+
+  // Reset transforms
+  fmh=false;fmv=false;falign='left';
+  document.getElementById('bmh').classList.remove('on');
+  document.getElementById('bmv').classList.remove('on');
+  document.getElementById('ftext').style.transform='';
+  document.getElementById('ftext').style.textAlign='left';
+  document.getElementById('alL').classList.add('on');
+  document.getElementById('alC').classList.remove('on');
+  document.getElementById('alR').classList.remove('on');
+
+  fgd=true;document.getElementById('fguide').style.display='block';document.getElementById('bgd').classList.add('on');
+
   ry=0;document.getElementById('fscroll').scrollTop=0;
   rplay=false;document.getElementById('rplay').textContent='▶';
   rs=0;document.getElementById('rtimer').textContent='0:00';
+
+  // Reset box size/position
+  const box=document.getElementById('fbox');
+  box.style.width='560px';box.style.left='50%';box.style.top='40px';box.style.transform='translateX(-50%)';
+  document.getElementById('fscroll').style.height='200px';
+
   document.getElementById('rec-screen').classList.add('show');
   if(gon('tcd'))await cdwn('cdo','cdn');
   srplay();
 }
-function srplay(){stprplay();rplay=true;document.getElementById('rplay').textContent='⏸';srtmr();const c=document.getElementById('fscroll');rriv=setInterval(()=>{ry+=parseInt(document.getElementById('rspd').value)*.5;c.scrollTop=ry;if(ry>=c.scrollHeight-c.clientHeight){if(gon('tlp')){ry=0;c.scrollTop=0}else stprplay()}},16)}
+
+function srplay(){
+  stprplay();rplay=true;document.getElementById('rplay').textContent='⏸';srtmr();
+  const c=document.getElementById('fscroll');
+  rriv=setInterval(()=>{
+    ry+=parseInt(document.getElementById('rspd').value)*.5;
+    c.scrollTop=ry;
+    if(ry>=c.scrollHeight-c.clientHeight){
+      if(gon('tlp')){ry=0;c.scrollTop=0}else stprplay()
+    }
+  },16)
+}
 function stprplay(){clearInterval(rriv);rriv=null;rplay=false;document.getElementById('rplay').textContent='▶';stprtmr()}
 function trplay(){rplay?stprplay():srplay()}
-function rreset(){ry=0;document.getElementById('fscroll').scrollTop=0;rs=0;if(!rplay)srplay()}
-function rsbox(d){const c=document.getElementById('fscroll');c.style.height=Math.max(80,Math.min(500,(parseInt(c.style.height)||160)+d))+'px'}
-function trgd(){fgd=!fgd;document.getElementById('fguide').style.display=fgd?'block':'none';document.getElementById('rgd').classList.toggle('active',fgd)}
-function trmr(){fmr=!fmr;document.getElementById('ftext').style.transform=fmr?'scaleX(-1)':'';document.getElementById('rmr').classList.toggle('active',fmr)}
+function rreset(){ry=0;document.getElementById('fscroll').scrollTop=0;rs=0;document.getElementById('rtimer').textContent='0:00';if(!rplay)srplay()}
+
 async function trcam(){
   if(!isrec){
     try{
@@ -280,40 +491,45 @@ async function trcam(){
       mr=new MediaRecorder(comb,{mimeType:mime});rch=[];
       mr.ondataavailable=e=>{if(e.data.size>0)rch.push(e.data)};
       mr.onstop=svrec;mr.start(500);isrec=true;
-      document.getElementById('rrecbtn').classList.add('recact');
+      document.getElementById('rrecbtn').classList.add('rcon');
       document.getElementById('recdot').classList.add('show');
     }catch(e){alert('Recording failed: '+e.message)}
-  }else{mr.stop();isrec=false;document.getElementById('rrecbtn').classList.remove('recact');document.getElementById('recdot').classList.remove('show')}
+  }else{
+    mr.stop();isrec=false;
+    document.getElementById('rrecbtn').classList.remove('rcon');
+    document.getElementById('recdot').classList.remove('show');
+  }
 }
-function svrec(){const ext=rch[0]?.type?.includes('mp4')?'mp4':'webm';const blob=new Blob(rch,{type:rch[0]?.type||'video/webm'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='recording-'+new Date().toISOString().slice(0,19).replace(/:/g,'-')+'.'+ext;a.click();URL.revokeObjectURL(u)}
-function clrec(){stprplay();if(isrec){mr.stop();isrec=false}if(camst){camst.getTracks().forEach(t=>t.stop());camst=null}document.getElementById('rec-screen').classList.remove('show');document.getElementById('rrecbtn').classList.remove('recact');document.getElementById('recdot').classList.remove('show');rs=0}
+function svrec(){
+  const ext=rch[0]?.type?.includes('mp4')?'mp4':'webm';
+  const blob=new Blob(rch,{type:rch[0]?.type||'video/webm'});
+  const u=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=u;a.download='recording-'+new Date().toISOString().slice(0,19).replace(/:/g,'-')+'.'+ext;
+  a.click();URL.revokeObjectURL(u);
+}
+function clrec(){
+  stprplay();
+  if(isrec){mr.stop();isrec=false}
+  if(camst){camst.getTracks().forEach(t=>t.stop());camst=null}
+  document.getElementById('rec-screen').classList.remove('show');
+  document.getElementById('rrecbtn').classList.remove('rcon');
+  document.getElementById('recdot').classList.remove('show');
+  rs=0;
+}
 function srtmr(){clearInterval(rtiv);rtiv=setInterval(()=>{rs++;document.getElementById('rtimer').textContent=Math.floor(rs/60)+':'+String(rs%60).padStart(2,'0')},1000)}
 function stprtmr(){clearInterval(rtiv)}
 
-// ── DRAG FLOAT BOX ──
-(function(){
-  const box=document.getElementById('fbox'),handle=document.getElementById('fhandle');
-  let drag=false,ox=0,oy=0,sx=0,sy=0;
-  function gp(){const r=box.getBoundingClientRect();return{x:r.left,y:r.top}}
-  handle.addEventListener('mousedown',e=>{drag=true;box.classList.add('drag');const p=gp();ox=p.x;oy=p.y;sx=e.clientX;sy=e.clientY;box.style.transform='none';box.style.left=ox+'px';box.style.top=oy+'px';e.preventDefault()});
-  document.addEventListener('mousemove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(window.innerWidth-box.offsetWidth,ox+(e.clientX-sx)))+'px';box.style.top=Math.max(0,Math.min(window.innerHeight-60,oy+(e.clientY-sy)))+'px'});
-  document.addEventListener('mouseup',()=>{drag=false;box.classList.remove('drag')});
-  handle.addEventListener('touchstart',e=>{drag=true;const p=gp();ox=p.x;oy=p.y;sx=e.touches[0].clientX;sy=e.touches[0].clientY;box.style.transform='none';box.style.left=ox+'px';box.style.top=oy+'px'},{passive:true});
-  document.addEventListener('touchmove',e=>{if(!drag)return;box.style.left=Math.max(0,Math.min(window.innerWidth-box.offsetWidth,ox+(e.touches[0].clientX-sx)))+'px';box.style.top=Math.max(0,Math.min(window.innerHeight-60,oy+(e.touches[0].clientY-sy)))+'px'},{passive:true});
-  document.addEventListener('touchend',()=>{drag=false});
-})();
-
-// ── FULLSCREEN PROMPTER ──
+// ─── FULLSCREEN PROMPTER ───────────────────────────────
 let py=0,ppl=false,ppiv=null,ptiv=null,ps=0,pmr=false,pgd=true;
 async function lpOnly(){
   const sc=document.getElementById('si').value.trim();
   if(!sc){alert('Please enter your script first.');return}
-  const fs=document.querySelector('#panel-scroll .cgrid input[type=range]').value;
+  const fs=document.getElementById('fsi').value;
   const pt=document.getElementById('ptext');
   pt.style.fontSize=fs+'px';pt.style.color=tc;pt.innerHTML=sc.replace(/\n/g,'<br>');
-  document.getElementById('pspd').value=document.getElementById('spd').value;
-  pmr=gon('tmr');document.getElementById('pov').classList.toggle('mh',pmr);document.getElementById('pmr').classList.toggle('active',pmr);
-  pgd=gon('tgd');document.getElementById('pguide').style.display=pgd?'block':'none';document.getElementById('pgd').classList.toggle('active',pgd);
+  document.getElementById('pspd').value=document.getElementById('spdi').value;
+  pmr=false;document.getElementById('pov').classList.remove('mh');document.getElementById('pmr').classList.remove('active');
+  pgd=true;document.getElementById('pguide').style.display='block';document.getElementById('pgd').classList.add('active');
   py=0;document.getElementById('pscroll').scrollTop=0;ps=0;document.getElementById('ptimer').textContent='0:00';
   ppl=false;document.getElementById('pplay').textContent='▶';
   document.getElementById('pov').classList.add('show');
@@ -330,15 +546,14 @@ function sptmr(){clearInterval(ptiv);ptiv=setInterval(()=>{ps++;document.getElem
 function stptmr(){clearInterval(ptiv)}
 function clp(){stpp();document.getElementById('pov').classList.remove('show');ps=0}
 
-// ── FLASHCARD ──
+// ─── FLASHCARD ─────────────────────────────────────────
 let fcc=[],fci=0;
 function lfc(){
   const sc=document.getElementById('si').value.trim();if(!sc){alert('Please enter your script first.');return}
   const ck=parseInt(document.getElementById('cks').value);
   const words=sc.split(/\s+/).filter(Boolean);fcc=[];
   for(let i=0;i<words.length;i+=ck)fcc.push(words.slice(i,i+ck).join(' '));
-  fci=0;
-  const fs=document.getElementById('fcfs').value;
+  fci=0;const fs=document.getElementById('fcfs').value;
   document.getElementById('fctxt').style.fontSize=fs+'px';document.getElementById('fctxt').style.color=tc;
   shfc(0);document.getElementById('fcov').classList.add('show');
 }
@@ -347,7 +562,7 @@ function nfc(){if(fci<fcc.length-1)shfc(++fci)}
 function pfc(){if(fci>0)shfc(--fci)}
 function cfc(e){e.stopPropagation();document.getElementById('fcov').classList.remove('show')}
 
-// ── KEYBOARD ──
+// ─── KEYBOARD ──────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   if(document.getElementById('fcov').classList.contains('show')){
     if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();nfc()}
