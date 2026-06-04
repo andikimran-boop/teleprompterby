@@ -526,11 +526,16 @@ async function startRec(){
     rch=[];
     mr.ondataavailable=e=>{if(e.data.size>0)rch.push(e.data)};
     mr.onstop=saveRec;
+
+    // Countdown THEN start recording + scroll together
+    if(gon('tcd'))await cdwn('cdo','cdn');
+
     mr.start(500);
     isrec=true;
     document.getElementById('btn-rec').classList.add('rcon');
     document.getElementById('recdot').classList.add('show');
     startRTimer();
+    if(!rplaying)startScroll(); // also kick off scroll if not already playing
   }catch(e){alert('Microphone access needed to record.\n\n'+e.message)}
 }
 function stopRec(){
@@ -589,8 +594,7 @@ async function lwCam(){
   stopScroll();stopRTimer();rs=0;document.getElementById('rtimer').textContent='0:00';
 
   document.getElementById('rec-screen').classList.add('show');
-  if(gon('tcd'))await cdwn('cdo','cdn');
-  startScroll();
+  // Don't auto-start — user presses play or REC themselves
 }
 function clrec(){
   stopScroll();if(isrec)stopRec();
