@@ -45,6 +45,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 #ios-note{display:none;background:rgba(224,48,48,.15);border:1px solid rgba(224,48,48,.4);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.85rem;line-height:1.5;color:#ffaaaa}
 #save-toast{display:none;position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid var(--accent);border-radius:10px;padding:14px 24px;color:var(--text);font-size:.9rem;z-index:999;text-align:center;line-height:1.5;white-space:nowrap}
 #save-toast.show{display:block}
+#mobile-tip{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.95);flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;overflow-y:auto}
+#mobile-tip h2{font-size:1.2rem;margin-bottom:14px;color:var(--accent)}
+#mobile-tip .step{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:7px 0;width:100%;max-width:340px;text-align:left;font-size:.88rem;line-height:1.6}
+#mobile-tip .step strong{color:var(--accent);display:block;margin-bottom:2px}
+#mobile-tip .btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center}
 
 /* ══ RECORDER SCREEN ══ */
 #rec-screen{display:none;position:fixed;inset:0;z-index:300;background:#000;overflow:hidden}
@@ -243,6 +248,31 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 </main>
 
 <div id="save-toast">💾 Saved to <strong>Downloads</strong> as .webm / .mp4</div>
+
+<!-- MOBILE TIP OVERLAY -->
+<div id="mobile-tip">
+  <h2>📱 Recording on Mobile</h2>
+  <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px;max-width:320px">
+    Mobile browsers can't record video directly. Here's the easiest workaround:
+  </p>
+  <div class="step"><strong>Step 1 — Start Screen Recorder</strong>
+    iPhone: Swipe down from top-right → tap ⏺ Screen Record<br>
+    Android: Swipe down → Screen Recorder tile
+  </div>
+  <div class="step"><strong>Step 2 — Tap "Start with Camera"</strong>
+    Your script + your face will both appear on screen
+  </div>
+  <div class="step"><strong>Step 3 — Hit Play in the app</strong>
+    The script scrolls, your face is recorded via screen recorder
+  </div>
+  <div class="step"><strong>Step 4 — Stop screen recorder when done</strong>
+    Video saves to your Photos / Gallery automatically
+  </div>
+  <div class="btns">
+    <button class="btn bp" onclick="startMobileCam()">📸 Open Camera View</button>
+    <button class="btn bo" onclick="document.getElementById('mobile-tip').style.display='none'">Cancel</button>
+  </div>
+</div>
 
 <!-- ══ RECORDER SCREEN ══ -->
 <div id="rec-screen">
@@ -614,22 +644,59 @@ document.addEventListener('keydown',e=>{if(e.key===' '){e.preventDefault();playi
   w.document.close();
 }
 
-// ─── LAUNCH CAMERA MODE ───────────────────────────────
+// ─── MOBILE: open webcam view, screen recorder does the recording ─
+async function startMobileCam(){
+  document.getElementById('mobile-tip').style.display='none';
+  const script=document.getElementById('si').value.trim();
+  if(!script)return;
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    document.getElementById('webcam-vid').srcObject=camStream;
+  }catch(e){
+    // Camera denied — fall back to prompter only (black bg)
+    document.getElementById('webcam-vid').style.display='none';
+  }
+  // Hide REC button on mobile — screen recorder handles recording
+  document.getElementById('btn-rec').style.display='none';
+  document.getElementById('recdot').style.display='none';
+  document.getElementById('rtimer').style.display='none';
+
+  const box=document.getElementById('fbox');
+  box.style.transform='translateX(-50%)';
+  box.style.left='50%';box.style.top='20px';box.style.width='95vw';
+  document.getElementById('fscroll').style.height='180px';
+
+  const fs=document.getElementById('fsi').value;
+  document.getElementById('ffs-r').value=fs;
+  document.getElementById('ffsv').textContent=fs+'px';
+  document.getElementById('ftext').style.fontSize=fs+'px';
+  document.getElementById('ftext').style.color=tc;
+  document.getElementById('ftext').innerHTML=document.getElementById('si').value.replace(/\n/g,'<br>');
+  document.getElementById('rspd').value=document.getElementById('spdi').value;
+  document.getElementById('rspdv').textContent=document.getElementById('spdi').value;
+
+  fmh=false;fmv=false;
+  document.getElementById('ftext').style.transform='';
+  document.getElementById('ftext').style.textAlign='left';
+  document.getElementById('bmh').classList.remove('on');
+  document.getElementById('bmv').classList.remove('on');
+  ['alL','alC','alR'].forEach(i=>document.getElementById(i).classList.remove('on'));
+  document.getElementById('alL').classList.add('on');
+  ry=0;document.getElementById('fscroll').scrollTop=0;
+  stopScroll();
+
+  document.getElementById('rec-screen').classList.add('show');
+}
+
+// ─── LAUNCH CAMERA MODE (desktop) ────────────────────
 async function lwCam(){
   const script=document.getElementById('si').value.trim();
   if(!script){alert('Please enter your script first.');return}
 
-  // Mobile: no webcam recording support — offer popout overlay instead
+  // Mobile: use webcam in browser, instruct user to use screen recorder
   if(isMobile){
-    const choice=confirm(
-      'On mobile, webcam recording is not supported in the browser.\n\n' +
-      'Instead, we\'ll open the script as a floating overlay.\n\n' +
-      '• Open your camera app first\n' +
-      '• Then come back here and tap OK\n' +
-      '• The script will appear as a transparent overlay\n\n' +
-      'Tap OK to continue.'
-    );
-    if(choice) lpOnly();
+    // Show instructions overlay first
+    document.getElementById('mobile-tip').style.display='flex';
     return;
   }
 
@@ -672,6 +739,10 @@ function clrec(){
   stopScroll();if(isrec)stopRec();
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}
   document.getElementById('webcam-vid').srcObject=null;
+  document.getElementById('webcam-vid').style.display='';
+  // Restore REC button (may have been hidden for mobile)
+  document.getElementById('btn-rec').style.display='';
+  document.getElementById('rtimer').style.display='';
   document.getElementById('rec-screen').classList.remove('show');
 }
 
