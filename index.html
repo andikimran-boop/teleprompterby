@@ -254,6 +254,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <div class="cs" style="background:#ffff00" data-c="#ffff00" onclick="stc(this)"></div>
         <div class="cs" style="background:#ff69b4" data-c="#ff69b4" onclick="stc(this)"></div>
       </div></div>
+    <div class="setsec">
       <div class="seth" onclick="tset()">⚙️ Options</div>
       <div class="setb" id="setb">
         <div class="setr"><span>3s countdown before start</span><div class="tog on" id="tcd" onclick="this.classList.toggle('on')"></div></div>
@@ -361,8 +362,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="rh rh-sw" data-dir="sw"></div>
     <div class="rh rh-se" data-dir="se"></div>
 
-    <!-- Thin drag handle at TOP with collapse toggle -->
+    <!-- Drag handle with collapse toggle -->
     <div id="ftop-drag">
+      <span style="font-size:.62rem;color:rgba(255,255,255,.35);letter-spacing:.5px">⠿ drag</span>
       <div class="drag-bar"></div>
       <button id="btn-collapse" onclick="toggleControls(event)" title="Show/hide controls">▼</button>
     </div>
