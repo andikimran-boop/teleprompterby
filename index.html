@@ -141,11 +141,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   transition:all .25s ease;
   overflow:hidden;
 }
-#fcontrols.collapsed{
-  padding:0;
-  max-height:0!important;
-  border-top:none;
-  gap:0;
+#fcollapse-body{
+  display:flex;flex-direction:column;gap:10px;
+  overflow:hidden;
+  transition:max-height .25s ease, opacity .2s ease;
+  max-height:600px;
+  opacity:1;
+}
+#fcollapse-body.collapsed{
+  max-height:0;
+  opacity:0;
+  pointer-events:none;
 }
 /* row inside controls */
 .crow2{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -362,11 +368,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="rh rh-sw" data-dir="sw"></div>
     <div class="rh rh-se" data-dir="se"></div>
 
-    <!-- Drag handle with collapse toggle -->
+    <!-- Drag handle — just a drag bar, no buttons -->
     <div id="ftop-drag">
       <span style="font-size:.62rem;color:rgba(255,255,255,.35);letter-spacing:.5px">⠿ drag</span>
       <div class="drag-bar"></div>
-      <button id="btn-collapse" onclick="toggleControls(event)" title="Show/hide controls">▼</button>
+      <span style="width:36px"></span><!-- spacer to centre the bar -->
     </div>
 
     <!-- SCRIPT TEXT — top of box -->
@@ -376,42 +382,48 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
     <!-- CONTROLS — pinned below text -->
     <div id="fcontrols">
-      <!-- Row 1: action buttons -->
+      <!-- Row 1: always visible — play, nudge, rec, collapse -->
       <div class="crow2">
         <button class="ftb" id="btn-play">▶</button>
         <button class="ftb" id="btn-rst" style="font-size:.85rem" title="Restart">↺</button>
-        <button class="ftb" id="btn-up" style="font-size:.85rem" title="Scroll back up">↑</button>
+        <button class="ftb" id="btn-up" style="font-size:.85rem" title="Scroll back">↑</button>
         <button class="ftb" id="btn-dn" style="font-size:.85rem" title="Scroll forward">↓</button>
-        <button class="ftb" id="btn-rec" style="color:var(--red);font-size:.75rem;width:auto;padding:0 10px;border-radius:18px">⏺ REC</button>
+        <button class="ftb" id="btn-rec" style="color:var(--red);font-size:.75rem;width:auto;padding:0 12px;border-radius:18px">⏺ REC</button>
         <div id="recdot"><div class="dot"></div>REC</div>
         <div id="rtimer">0:00</div>
+        <!-- Collapse toggle — lives beside REC in same row -->
+        <button class="ftb" id="btn-collapse" onclick="toggleControls(event)" title="Show/hide settings" style="margin-left:auto;font-size:.75rem;width:auto;padding:0 12px;border-radius:18px;border-color:rgba(255,255,255,.4)">⚙ ▼</button>
       </div>
-      <!-- Row 2: Speed slider — full width, big -->
-      <div class="srow-full">
-        <div class="srow-label">
-          <span>Speed</span>
-          <span class="srow-val" id="rspdv">3</span>
+
+      <!-- Collapsible section — rows 2, 3, 4 -->
+      <div id="fcollapse-body">
+        <!-- Row 2: Speed slider -->
+        <div class="srow-full">
+          <div class="srow-label">
+            <span>Speed</span>
+            <span class="srow-val" id="rspdv">3</span>
+          </div>
+          <input type="range" id="rspd" min="1" max="15" value="3" class="big-slider">
         </div>
-        <input type="range" id="rspd" min="1" max="15" value="3" class="big-slider">
-      </div>
-      <!-- Row 3: Font size slider — full width, big -->
-      <div class="srow-full">
-        <div class="srow-label">
-          <span>Font Size</span>
-          <span class="srow-val" id="ffsv">40px</span>
+        <!-- Row 3: Font size slider -->
+        <div class="srow-full">
+          <div class="srow-label">
+            <span>Font Size</span>
+            <span class="srow-val" id="ffsv">40px</span>
+          </div>
+          <input type="range" id="ffs-r" min="20" max="120" value="40" class="big-slider">
         </div>
-        <input type="range" id="ffs-r" min="20" max="120" value="40" class="big-slider">
-      </div>
-      <!-- Divider before align/mirror -->
-      <div style="height:1px;background:rgba(255,255,255,.1);margin:4px 0"></div>
-      <!-- Row 4: align + mirror buttons — bigger tap targets -->
-      <div class="crow2" style="gap:10px;padding:4px 0">
-        <button class="tb2 on" id="alL" style="padding:8px 18px;font-size:.85rem">L</button>
-        <button class="tb2" id="alC" style="padding:8px 18px;font-size:.85rem">C</button>
-        <button class="tb2" id="alR" style="padding:8px 18px;font-size:.85rem">R</button>
-        <div class="sep" style="height:28px"></div>
-        <button class="tb2" id="bmh" style="padding:8px 14px;font-size:.82rem">⇔ Mirror H</button>
-        <button class="tb2" id="bmv" style="padding:8px 14px;font-size:.82rem">⇕ Mirror V</button>
+        <!-- Divider -->
+        <div style="height:1px;background:rgba(255,255,255,.1);margin:4px 0"></div>
+        <!-- Row 4: align + mirror -->
+        <div class="crow2" style="gap:10px;padding:4px 0">
+          <button class="tb2 on" id="alL" style="padding:8px 18px;font-size:.85rem">L</button>
+          <button class="tb2" id="alC" style="padding:8px 18px;font-size:.85rem">C</button>
+          <button class="tb2" id="alR" style="padding:8px 18px;font-size:.85rem">R</button>
+          <div class="sep" style="height:28px"></div>
+          <button class="tb2" id="bmh" style="padding:8px 14px;font-size:.82rem">⇔ Mirror H</button>
+          <button class="tb2" id="bmv" style="padding:8px 14px;font-size:.82rem">⇕ Mirror V</button>
+        </div>
       </div>
     </div>
 
@@ -480,10 +492,10 @@ function cdwn(oId,nId){
 // ─── COLLAPSE/EXPAND CONTROLS ─────────────────────────
 function toggleControls(e){
   e.stopPropagation();
-  const c=document.getElementById('fcontrols');
+  const body=document.getElementById('fcollapse-body');
   const btn=document.getElementById('btn-collapse');
-  const collapsed=c.classList.toggle('collapsed');
-  btn.textContent=collapsed?'▲':'▼';
+  const collapsed=body.classList.toggle('collapsed');
+  btn.textContent=collapsed?'⚙ ▲':'⚙ ▼';
 }
 
 // ─── FLOAT BOX: controls wiring ───────────────────────
