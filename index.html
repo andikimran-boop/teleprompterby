@@ -27,7 +27,8 @@ input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2p
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer}
 .crow{display:flex;gap:8px;align-items:center;margin-top:6px}
 .cs{width:26px;height:26px;border-radius:6px;border:2px solid transparent;cursor:pointer}
-.cs.sel{border-color:var(--accent)}
+.fcs{width:26px;height:26px;border-radius:6px;border:2px solid transparent;cursor:pointer}
+.cs.sel,.fcs.sel{border-color:var(--accent)}
 .brow{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
 .btn{display:inline-flex;align-items:center;gap:7px;padding:11px 22px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .15s}
 .bp{background:var(--accent);color:#000}.bp:hover{background:#ffc43d}
@@ -154,6 +155,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .b2v{font-size:.62rem;color:var(--accent);font-weight:700;min-width:26px}
 #ffs-r{width:70px;height:3px}
 #ffs-r::-webkit-slider-thumb{width:12px;height:12px}
+/* Full-width slider rows for mobile-friendly controls */
+.srow-full{padding:4px 0 2px;width:100%}
+.srow-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:.72rem;color:rgba(255,255,255,.5)}
+.srow-val{color:var(--accent);font-weight:700;font-size:.75rem}
+.big-slider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.15);outline:none;cursor:pointer}
+.big-slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 6px rgba(0,0,0,.4)}
+.big-slider::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--accent);cursor:pointer;border:none}
 .sep{width:1px;height:18px;background:rgba(255,255,255,.12);margin:0 2px;flex-shrink:0}
 .tb2{padding:3px 9px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.5);font-size:.72rem;cursor:pointer;transition:all .15s}
 .tb2:hover{background:rgba(255,255,255,.12);color:#fff}
@@ -207,7 +215,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 </header>
 <main>
   <textarea id="si" placeholder="Paste your script here..."></textarea>
-  <div id="ios-note">⚠️ <strong>iPhone:</strong> Webcam recording not supported in Safari. Use Prompter Only and record with iPhone's screen recorder.</div>
+  <div id="ios-note"></div>
   <div id="panel-scroll" class="panel active">
     <div class="cgrid">
       <div class="cg"><div class="cl">Font Size <span id="lfs">40px</span></div><input type="range" id="fsi" min="24" max="120" value="40" oninput="document.getElementById('lfs').textContent=this.value+'px'"></div>
@@ -245,6 +253,19 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="cgrid">
       <div class="cg"><div class="cl">Font Size <span id="lfcfs">40px</span></div><input type="range" id="fcfs" min="20" max="100" value="40" oninput="document.getElementById('lfcfs').textContent=this.value+'px'"></div>
       <div class="cg"><div class="cl">Words per card <span id="lck">12</span></div><input type="range" id="cks" min="3" max="40" value="12" oninput="document.getElementById('lck').textContent=this.value"></div>
+    </div>
+    <div class="cg" style="margin-bottom:12px">
+      <div class="cl">Text Color</div>
+      <div class="crow" style="flex-wrap:wrap;gap:8px;margin-top:8px">
+        <div class="fcs sel" style="background:#ffffff;border-color:#555" data-fc="#ffffff" onclick="sfctc(this)"></div>
+        <div class="fcs" style="background:#000000;border-color:#444" data-fc="#000000" onclick="sfctc(this)"></div>
+        <div class="fcs" style="background:#f0a500" data-fc="#f0a500" onclick="sfctc(this)"></div>
+        <div class="fcs" style="background:#e03030" data-fc="#e03030" onclick="sfctc(this)"></div>
+        <div class="fcs" style="background:#3b82f6" data-fc="#3b82f6" onclick="sfctc(this)"></div>
+        <div class="fcs" style="background:#00ff88" data-fc="#00ff88" onclick="sfctc(this)"></div>
+        <div class="fcs" style="background:#ffff00" data-fc="#ffff00" onclick="sfctc(this)"></div>
+        <div class="fcs" style="background:#ff69b4" data-fc="#ff69b4" onclick="sfctc(this)"></div>
+      </div>
     </div>
     <div class="cg" style="margin-bottom:12px">
       <div class="cl">Card Background</div>
@@ -318,27 +339,34 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
     <!-- CONTROLS — pinned below text -->
     <div id="fcontrols">
-      <!-- Row 1: play, restart, nudge, speed, rec, timer -->
+      <!-- Row 1: action buttons -->
       <div class="crow2">
         <button class="ftb" id="btn-play">▶</button>
         <button class="ftb" id="btn-rst" style="font-size:.85rem" title="Restart">↺</button>
-        <button class="ftb" id="btn-up" style="font-size:.85rem" title="Scroll back up (↑)">↑</button>
-        <button class="ftb" id="btn-dn" style="font-size:.85rem" title="Scroll forward (↓)">↓</button>
-        <div class="spdrow">
-          <label>Speed</label>
-          <input type="range" id="rspd" min="1" max="15" value="3">
-          <span class="spdval" id="rspdv">3</span>
-        </div>
-        <button class="ftb" id="btn-rec" style="color:var(--red);font-size:.85rem">⏺ REC</button>
+        <button class="ftb" id="btn-up" style="font-size:.85rem" title="Scroll back up">↑</button>
+        <button class="ftb" id="btn-dn" style="font-size:.85rem" title="Scroll forward">↓</button>
+        <button class="ftb" id="btn-rec" style="color:var(--red);font-size:.75rem;width:auto;padding:0 10px;border-radius:18px">⏺ REC</button>
         <div id="recdot"><div class="dot"></div>REC</div>
         <div id="rtimer">0:00</div>
       </div>
-      <!-- Row 2: font size, align, mirror -->
-      <div class="crow2">
-        <span class="b2l">Size</span>
-        <input type="range" id="ffs-r" min="20" max="120" value="40">
-        <span class="b2v" id="ffsv">60px</span>
-        <div class="sep"></div>
+      <!-- Row 2: Speed slider — full width, big -->
+      <div class="srow-full">
+        <div class="srow-label">
+          <span>Speed</span>
+          <span class="srow-val" id="rspdv">3</span>
+        </div>
+        <input type="range" id="rspd" min="1" max="15" value="3" class="big-slider">
+      </div>
+      <!-- Row 3: Font size slider — full width, big -->
+      <div class="srow-full">
+        <div class="srow-label">
+          <span>Font Size</span>
+          <span class="srow-val" id="ffsv">40px</span>
+        </div>
+        <input type="range" id="ffs-r" min="20" max="120" value="40" class="big-slider">
+      </div>
+      <!-- Row 4: align + mirror buttons -->
+      <div class="crow2" style="padding-top:2px">
         <button class="tb2 on" id="alL">L</button>
         <button class="tb2" id="alC">C</button>
         <button class="tb2" id="alR">R</button>
@@ -386,11 +414,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 // ─── HELPERS ──────────────────────────────────────────
 const isIOS=/iP(hone|od|ad)/.test(navigator.userAgent);
 const isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-if(isIOS)document.getElementById('ios-note').style.display='block';
 let tc='#ffffff';
-let fcbg='#000000'; // flashcard background color
+let fcbg='#000000';
+let fctc='#ffffff'; // flashcard text color
 function stc(el){document.querySelectorAll('.cs:not([data-bg])').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');tc=el.dataset.c}
 function sfcbg(el){document.querySelectorAll('[data-bg]').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');fcbg=el.dataset.bg}
+function sfctc(el){document.querySelectorAll('.fcs').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');fctc=el.dataset.fc}
 function tset(){const b=document.getElementById('setb');b.style.display=b.style.display==='none'?'block':'none'}
 function swp(m,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+m).classList.add('active');btn.classList.add('active')}
 function gon(id){return document.getElementById(id).classList.contains('on')}
@@ -808,7 +837,7 @@ function lfc(){
   for(let i=0;i<words.length;i+=ck)fcc.push(words.slice(i,i+ck).join(' '));
   fci=0;const fs=document.getElementById('fcfs').value;
   document.getElementById('fctxt').style.fontSize=fs+'px';
-  document.getElementById('fctxt').style.color=tc;
+  document.getElementById('fctxt').style.color=fctc;
   document.getElementById('fcov').style.background=fcbg;
   shfc(0);document.getElementById('fcov').classList.add('show');
 }
