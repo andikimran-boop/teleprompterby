@@ -153,8 +153,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 /* font + align row */
 .b2l{font-size:.62rem;color:rgba(255,255,255,.4);white-space:nowrap}
 .b2v{font-size:.62rem;color:var(--accent);font-weight:700;min-width:26px}
-#ffs-r{width:70px;height:3px}
-#ffs-r::-webkit-slider-thumb{width:12px;height:12px}
+/* ffs-r uses big-slider class — no separate override needed */
 /* Full-width slider rows for mobile-friendly controls */
 .srow-full{padding:8px 0 4px;width:100%}
 .srow-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.8rem;color:rgba(255,255,255,.6)}
@@ -365,14 +364,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         </div>
         <input type="range" id="ffs-r" min="20" max="120" value="40" class="big-slider">
       </div>
-      <!-- Row 4: align + mirror buttons -->
-      <div class="crow2" style="padding-top:2px">
-        <button class="tb2 on" id="alL">L</button>
-        <button class="tb2" id="alC">C</button>
-        <button class="tb2" id="alR">R</button>
-        <div class="sep"></div>
-        <button class="tb2" id="bmh">⇔ Mirror H</button>
-        <button class="tb2" id="bmv">⇕ Mirror V</button>
+      <!-- Divider before align/mirror -->
+      <div style="height:1px;background:rgba(255,255,255,.1);margin:4px 0"></div>
+      <!-- Row 4: align + mirror buttons — bigger tap targets -->
+      <div class="crow2" style="gap:10px;padding:4px 0">
+        <button class="tb2 on" id="alL" style="padding:8px 18px;font-size:.85rem">L</button>
+        <button class="tb2" id="alC" style="padding:8px 18px;font-size:.85rem">C</button>
+        <button class="tb2" id="alR" style="padding:8px 18px;font-size:.85rem">R</button>
+        <div class="sep" style="height:28px"></div>
+        <button class="tb2" id="bmh" style="padding:8px 14px;font-size:.82rem">⇔ Mirror H</button>
+        <button class="tb2" id="bmv" style="padding:8px 14px;font-size:.82rem">⇕ Mirror V</button>
       </div>
     </div>
 
