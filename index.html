@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PrompterPro By Andik </title>
+<title>PrompterPro</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0a0a;--surface:#141414;--border:#2a2a2a;--accent:#f0a500;--red:#e03030;--text:#f0ece4;--muted:#666;--radius:10px}
@@ -225,7 +225,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 </head>
 <body>
 <header>
-  <div class="logo">Prompter<span>ProByAndik</span></div>
+  <div class="logo">Prompter<span>Pro</span></div>
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="swp('scroll',this)">📜 Scroll</button>
     <button class="mode-tab" onclick="swp('flash',this)">🃏 Flashcard</button>
@@ -654,13 +654,26 @@ document.getElementById('btn-rec').addEventListener('click',()=>isrec?stopRec():
 async function startRec(){
   if(!camStream){alert('Camera not ready.');return}
   try{
-    const mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    const mic=await navigator.mediaDevices.getUserMedia({
+      audio:{
+        echoCancellation:false,
+        noiseSuppression:false,
+        autoGainControl:false,
+        sampleRate:44100,      // standard CD quality — most compatible
+        channelCount:1         // mono — smaller file, more compatible
+      }
+    });
     const combined=new MediaStream([...camStream.getVideoTracks(),...mic.getAudioTracks()]);
 
-    // iOS Safari supports video/mp4, Android/Chrome supports webm
-    // Try formats in order, fall back gracefully
+    // Priority: mp4 for iOS, then webm with vp8 (better CapCut compat than vp9), then fallback
     let mime='';
-    const formats=['video/mp4;codecs=avc1,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm'];
+    const formats=[
+      'video/mp4;codecs=avc1,mp4a.40.2',  // iOS Safari — H.264 + AAC
+      'video/mp4',                          // generic mp4
+      'video/webm;codecs=vp8,opus',         // vp8 has better CapCut support than vp9
+      'video/webm;codecs=vp9,opus',
+      'video/webm'
+    ];
     for(const f of formats){ if(MediaRecorder.isTypeSupported(f)){mime=f;break} }
 
     mr = mime ? new MediaRecorder(combined,{mimeType:mime}) : new MediaRecorder(combined);
