@@ -42,7 +42,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .tog.on{background:var(--accent)}
 .tog::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}
 .tog.on::after{transform:translateX(20px)}
-#ios-note{display:none;background:rgba(224,48,48,.15);border:1px solid rgba(224,48,48,.4);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:.85rem;line-height:1.5;color:#ffaaaa}
+#ios-note{display:none}
 #save-toast{display:none;position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid var(--accent);border-radius:10px;padding:14px 24px;color:var(--text);font-size:.9rem;z-index:999;text-align:center;line-height:1.5;white-space:nowrap}
 #save-toast.show{display:block}
 #mobile-tip{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.95);flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;overflow-y:auto}
@@ -210,13 +210,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   <div id="ios-note">⚠️ <strong>iPhone:</strong> Webcam recording not supported in Safari. Use Prompter Only and record with iPhone's screen recorder.</div>
   <div id="panel-scroll" class="panel active">
     <div class="cgrid">
-      <div class="cg"><div class="cl">Font Size <span id="lfs">60px</span></div><input type="range" id="fsi" min="24" max="120" value="60" oninput="document.getElementById('lfs').textContent=this.value+'px'"></div>
+      <div class="cg"><div class="cl">Font Size <span id="lfs">40px</span></div><input type="range" id="fsi" min="24" max="120" value="40" oninput="document.getElementById('lfs').textContent=this.value+'px'"></div>
       <div class="cg"><div class="cl">Speed <span id="lsp">3</span></div><input type="range" id="spdi" min="1" max="15" value="3" oninput="document.getElementById('lsp').textContent=this.value"></div>
       <div class="cg"><div class="cl">Text Color</div><div class="crow">
-        <div class="cs sel" style="background:#fff" data-c="#fff" onclick="stc(this)"></div>
+        <div class="cs sel" style="background:#ffffff" data-c="#ffffff" onclick="stc(this)"></div>
+        <div class="cs" style="background:#000000;border-color:#444" data-c="#000000" onclick="stc(this)"></div>
         <div class="cs" style="background:#f0a500" data-c="#f0a500" onclick="stc(this)"></div>
+        <div class="cs" style="background:#e03030" data-c="#e03030" onclick="stc(this)"></div>
+        <div class="cs" style="background:#3b82f6" data-c="#3b82f6" onclick="stc(this)"></div>
         <div class="cs" style="background:#00ff88" data-c="#00ff88" onclick="stc(this)"></div>
         <div class="cs" style="background:#ffff00" data-c="#ffff00" onclick="stc(this)"></div>
+        <div class="cs" style="background:#ff69b4" data-c="#ff69b4" onclick="stc(this)"></div>
       </div></div>
     </div>
     <div class="setsec">
@@ -239,10 +243,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   </div>
   <div id="panel-flash" class="panel">
     <div class="cgrid">
-      <div class="cg"><div class="cl">Font Size <span id="lfcfs">56px</span></div><input type="range" id="fcfs" min="20" max="100" value="56" oninput="document.getElementById('lfcfs').textContent=this.value+'px'"></div>
+      <div class="cg"><div class="cl">Font Size <span id="lfcfs">40px</span></div><input type="range" id="fcfs" min="20" max="100" value="40" oninput="document.getElementById('lfcfs').textContent=this.value+'px'"></div>
       <div class="cg"><div class="cl">Words per card <span id="lck">12</span></div><input type="range" id="cks" min="3" max="40" value="12" oninput="document.getElementById('lck').textContent=this.value"></div>
     </div>
-    <div class="brow" style="margin-top:16px"><button class="btn bp" onclick="lfc()">🃏 Start Flashcards</button></div>
+    <div class="cg" style="margin-bottom:12px">
+      <div class="cl">Card Background</div>
+      <div class="crow" style="flex-wrap:wrap;gap:8px;margin-top:8px">
+        <div class="cs sel" style="background:#000000;border-color:#444" data-bg="#000000" onclick="sfcbg(this)"></div>
+        <div class="cs" style="background:#1a1a2e" data-bg="#1a1a2e" onclick="sfcbg(this)"></div>
+        <div class="cs" style="background:#c0392b" data-bg="#c0392b" onclick="sfcbg(this)"></div>
+        <div class="cs" style="background:#2980b9" data-bg="#2980b9" onclick="sfcbg(this)"></div>
+        <div class="cs" style="background:#8e44ad" data-bg="#8e44ad" onclick="sfcbg(this)"></div>
+        <div class="cs" style="background:#e91e8c" data-bg="#e91e8c" onclick="sfcbg(this)"></div>
+        <div class="cs" style="background:#f39c12" data-bg="#f39c12" onclick="sfcbg(this)"></div>
+        <div class="cs" style="background:#27ae60" data-bg="#27ae60" onclick="sfcbg(this)"></div>
+        <div class="cs" style="background:#ffffff;border-color:#555" data-bg="#ffffff" onclick="sfcbg(this)"></div>
+      </div>
+    </div>
+    <div class="brow" style="margin-top:4px"><button class="btn bp" onclick="lfc()">🃏 Start Flashcards</button></div>
     <p style="margin-top:10px;font-size:.82rem;color:var(--muted)">Tap anywhere or ← → arrow keys to advance.</p>
   </div>
 </main>
@@ -318,7 +336,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <!-- Row 2: font size, align, mirror -->
       <div class="crow2">
         <span class="b2l">Size</span>
-        <input type="range" id="ffs-r" min="20" max="120" value="60">
+        <input type="range" id="ffs-r" min="20" max="120" value="40">
         <span class="b2v" id="ffsv">60px</span>
         <div class="sep"></div>
         <button class="tb2 on" id="alL">L</button>
@@ -369,8 +387,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 const isIOS=/iP(hone|od|ad)/.test(navigator.userAgent);
 const isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 if(isIOS)document.getElementById('ios-note').style.display='block';
-let tc='#fff';
-function stc(el){document.querySelectorAll('.cs').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');tc=el.dataset.c}
+let tc='#ffffff';
+let fcbg='#000000'; // flashcard background color
+function stc(el){document.querySelectorAll('.cs:not([data-bg])').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');tc=el.dataset.c}
+function sfcbg(el){document.querySelectorAll('[data-bg]').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');fcbg=el.dataset.bg}
 function tset(){const b=document.getElementById('setb');b.style.display=b.style.display==='none'?'block':'none'}
 function swp(m,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+m).classList.add('active');btn.classList.add('active')}
 function gon(id){return document.getElementById(id).classList.contains('on')}
@@ -552,7 +572,7 @@ document.getElementById('btn-rec').addEventListener('click',()=>isrec?stopRec():
 async function startRec(){
   if(!camStream){alert('Camera not ready.');return}
   try{
-    const mic=await navigator.mediaDevices.getUserMedia({audio:true});
+    const mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
     const combined=new MediaStream([...camStream.getVideoTracks(),...mic.getAudioTracks()]);
 
     // iOS Safari supports video/mp4, Android/Chrome supports webm
@@ -787,7 +807,9 @@ function lfc(){
   const words=sc.split(/\s+/).filter(Boolean);fcc=[];
   for(let i=0;i<words.length;i+=ck)fcc.push(words.slice(i,i+ck).join(' '));
   fci=0;const fs=document.getElementById('fcfs').value;
-  document.getElementById('fctxt').style.fontSize=fs+'px';document.getElementById('fctxt').style.color=tc;
+  document.getElementById('fctxt').style.fontSize=fs+'px';
+  document.getElementById('fctxt').style.color=tc;
+  document.getElementById('fcov').style.background=fcbg;
   shfc(0);document.getElementById('fcov').classList.add('show');
 }
 function shfc(i){const t=document.getElementById('fctxt');t.classList.add('fade');setTimeout(()=>{t.textContent=fcc[i]||'';document.getElementById('fcprog').textContent=(i+1)+' / '+fcc.length;document.getElementById('fcbar').style.width=((i+1)/fcc.length*100)+'%';t.classList.remove('fade')},180)}
