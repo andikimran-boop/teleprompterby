@@ -287,6 +287,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <div id="save-toast">💾 Saved to <strong>Downloads</strong> as .webm / .mp4</div>
 
+<!-- VIDEO PLAYBACK MODAL — shown after recording on iPhone -->
+<div id="vid-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.95);flex-direction:column;align-items:center;justify-content:center;padding:20px">
+  <p style="color:var(--accent);font-weight:600;font-size:1rem;margin-bottom:10px;text-align:center">Recording complete!</p>
+  <p style="color:rgba(255,255,255,.6);font-size:.82rem;margin-bottom:16px;text-align:center;line-height:1.5">
+    <strong style="color:#fff">Hold your finger on the video</strong> below,<br>then tap <strong style="color:#fff">"Save to Photos"</strong>
+  </p>
+  <video id="vid-playback" controls playsinline style="width:100%;max-width:400px;border-radius:12px;background:#000;max-height:50vh"></video>
+  <button class="btn bo" onclick="closeVidModal()" style="margin-top:18px;width:100%;max-width:400px;justify-content:center">Done</button>
+</div>
+
 <!-- MOBILE TIP OVERLAY -->
 <div id="mobile-tip">
   <h2>📱 Recording on Mobile</h2>
@@ -640,33 +650,45 @@ function stopRec(){
   stopRTimer();
 }
 async function saveRec(){
-  const type=rch[0]?.type||mr?.mimeType||'video/mp4';
-  const ext=type.includes('mp4')?'mp4':'webm';
-  const blob=new Blob(rch,{type});
-  const filename='recording-'+new Date().toISOString().slice(0,19).replace(/:/g,'-')+'.'+ext;
+  const type = mr?.mimeType || rch[0]?.type || 'video/mp4';
+  const ext = type.includes('mp4') ? 'mp4' : 'webm';
+  const blob = new Blob(rch, {type});
+  const url = URL.createObjectURL(blob);
+  const filename = 'recording-' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.' + ext;
 
-  // On iPhone only, try Web Share API — saves to Photos via share sheet
-  if(isIOS && navigator.share && navigator.canShare){
-    try{
-      const file=new File([blob],filename,{type});
-      if(navigator.canShare({files:[file]})){
-        await navigator.share({files:[file],title:'PrompterPro Recording'});
-        showToast('✅ Saved! Choose "Save Video" to add to Photos.');
-        return;
-      }
-    }catch(e){
-      if(e.name==='AbortError')return; // user cancelled share sheet
-      // fall through to download
+  if(isIOS){
+    // Show the video in a modal — user long-presses to Save to Photos
+    const modal = document.getElementById('vid-modal');
+    const vid = document.getElementById('vid-playback');
+    vid.src = url;
+    modal.style.display = 'flex';
+    // Also try share sheet as a bonus option
+    if(navigator.share && navigator.canShare){
+      try{
+        const file = new File([blob], filename, {type});
+        if(navigator.canShare({files:[file]})){
+          setTimeout(async()=>{
+            try{ await navigator.share({files:[file], title:'PrompterPro Recording'}); }catch(e){}
+          }, 500);
+        }
+      }catch(e){}
     }
+  } else {
+    // Android + Desktop: direct download
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
+    showToast('💾 Saved to Downloads');
   }
+}
 
-  // Desktop or fallback: trigger download
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=filename;
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1000);
-  showToast('💾 Saved to Downloads');
+function closeVidModal(){
+  const vid = document.getElementById('vid-playback');
+  vid.pause();
+  URL.revokeObjectURL(vid.src);
+  vid.src = '';
+  document.getElementById('vid-modal').style.display = 'none';
 }
 
 // ─── POPOUT SCRIPT BOX (desktop only) ────────────────
