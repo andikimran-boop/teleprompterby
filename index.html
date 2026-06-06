@@ -425,7 +425,12 @@ function tset(){const b=document.getElementById('setb');b.style.display=b.style.
 function swp(m,btn){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+m).classList.add('active');btn.classList.add('active')}
 function gon(id){return document.getElementById(id).classList.contains('on')}
 function fmtTime(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
-function showToast(){const t=document.getElementById('save-toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),5000)}
+function showToast(msg){
+  const t=document.getElementById('save-toast');
+  t.textContent=msg||'💾 Saved to Downloads';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),5000);
+}
 function cdwn(oId,nId){
   return new Promise(r=>{
     const o=document.getElementById(oId),n=document.getElementById(nId);
@@ -634,16 +639,34 @@ function stopRec(){
   document.getElementById('recdot').classList.remove('show');
   stopRTimer();
 }
-function saveRec(){
-  const type=rch[0]?.type||mr?.mimeType||'video/webm';
+async function saveRec(){
+  const type=rch[0]?.type||mr?.mimeType||'video/mp4';
   const ext=type.includes('mp4')?'mp4':'webm';
   const blob=new Blob(rch,{type});
+  const filename='recording-'+new Date().toISOString().slice(0,19).replace(/:/g,'-')+'.'+ext;
+
+  // On iPhone only, try Web Share API — saves to Photos via share sheet
+  if(isIOS && navigator.share && navigator.canShare){
+    try{
+      const file=new File([blob],filename,{type});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:'PrompterPro Recording'});
+        showToast('✅ Saved! Choose "Save Video" to add to Photos.');
+        return;
+      }
+    }catch(e){
+      if(e.name==='AbortError')return; // user cancelled share sheet
+      // fall through to download
+    }
+  }
+
+  // Desktop or fallback: trigger download
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download='recording-'+new Date().toISOString().slice(0,19).replace(/:/g,'-')+'.'+ext;
+  a.href=url;a.download=filename;
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},1000);
-  showToast();
+  showToast('💾 Saved to Downloads');
 }
 
 // ─── POPOUT SCRIPT BOX (desktop only) ────────────────
