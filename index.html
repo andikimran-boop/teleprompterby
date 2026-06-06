@@ -93,25 +93,34 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 /* ── TOP drag handle — now includes collapse toggle ── */
 #ftop-drag{
-  height:28px;
+  height:36px;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 10px;
+  padding:0 12px;
   cursor:move;
-  background:rgba(255,255,255,.05);
+  background:rgba(0,0,0,.5);
   border-radius:12px 12px 0 0;
-  border-bottom:1px solid rgba(255,255,255,.07);
+  border-bottom:1px solid rgba(255,255,255,.1);
   flex-shrink:0;
 }
 #ftop-drag .drag-bar{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,.2);pointer-events:none}
+/* ── Front page mobile sliders ── */
+.mslider-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+.mslider-lbl{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.mslider-val{color:var(--accent);font-weight:700;font-size:.85rem}
+.mslider{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border);outline:none;cursor:pointer}
+.mslider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.mslider::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--accent);cursor:pointer;border:none}
+
+/* ── Collapse button — bigger and more visible ── */
 #btn-collapse{
-  width:26px;height:26px;border-radius:50%;
-  border:1px solid rgba(255,255,255,.2);
-  background:rgba(255,255,255,.08);
-  color:rgba(255,255,255,.6);font-size:.7rem;
+  width:36px;height:36px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.35);
+  background:rgba(0,0,0,.5);
+  color:#fff;font-size:.8rem;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;line-height:1;
+  flex-shrink:0;
 }
-#btn-collapse:hover{background:rgba(255,255,255,.2);color:#fff}
+#btn-collapse:hover{background:rgba(255,255,255,.2)}
 
 /* ── SCRIPT TEXT ── */
 #fscroll{
@@ -226,10 +235,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   <textarea id="si" placeholder="Paste your script here..."></textarea>
   <div id="ios-note"></div>
   <div id="panel-scroll" class="panel active">
-    <div class="cgrid">
-      <div class="cg"><div class="cl">Font Size <span id="lfs">40px</span></div><input type="range" id="fsi" min="24" max="120" value="40" oninput="document.getElementById('lfs').textContent=this.value+'px'"></div>
-      <div class="cg"><div class="cl">Speed <span id="lsp">3</span></div><input type="range" id="spdi" min="1" max="15" value="3" oninput="document.getElementById('lsp').textContent=this.value"></div>
-      <div class="cg"><div class="cl">Text Color</div><div class="crow">
+    <!-- Mobile-friendly stacked sliders -->
+    <div class="mslider-row">
+      <div class="mslider-lbl"><span>Font Size</span><span class="mslider-val" id="lfs">40px</span></div>
+      <input type="range" id="fsi" min="24" max="120" value="40" class="mslider" oninput="document.getElementById('lfs').textContent=this.value+'px'">
+    </div>
+    <div class="mslider-row">
+      <div class="mslider-lbl"><span>Speed</span><span class="mslider-val" id="lsp">3</span></div>
+      <input type="range" id="spdi" min="1" max="15" value="3" class="mslider" oninput="document.getElementById('lsp').textContent=this.value">
+    </div>
+    <div class="cg" style="margin-bottom:4px"><div class="cl">Text Color</div><div class="crow" style="flex-wrap:wrap;gap:8px;margin-top:8px">
         <div class="cs sel" style="background:#ffffff" data-c="#ffffff" onclick="stc(this)"></div>
         <div class="cs" style="background:#000000;border-color:#444" data-c="#000000" onclick="stc(this)"></div>
         <div class="cs" style="background:#f0a500" data-c="#f0a500" onclick="stc(this)"></div>
@@ -239,8 +254,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <div class="cs" style="background:#ffff00" data-c="#ffff00" onclick="stc(this)"></div>
         <div class="cs" style="background:#ff69b4" data-c="#ff69b4" onclick="stc(this)"></div>
       </div></div>
-    </div>
-    <div class="setsec">
       <div class="seth" onclick="tset()">⚙️ Options</div>
       <div class="setb" id="setb">
         <div class="setr"><span>3s countdown before start</span><div class="tog on" id="tcd" onclick="this.classList.toggle('on')"></div></div>
