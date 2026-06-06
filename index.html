@@ -63,14 +63,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   top:20px;left:50%;
   width:580px;
   /* height is set by JS; no flex height trick */
-  background:rgba(0,0,0,.82);
-  backdrop-filter:blur(10px);
+  background:rgba(0,0,0,.40);
+  backdrop-filter:blur(4px);
   border-radius:14px;
-  border:1.5px solid rgba(255,255,255,.18);
-  /* layout: text on top, controls pinned below */
+  border:1.5px solid rgba(255,255,255,.12);
   display:flex;flex-direction:column;
   min-width:240px;
-  overflow:visible; /* let resize handles stick out */
+  overflow:visible;
 }
 
 /* ── 8 resize handles ── */
@@ -83,7 +82,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .rh-ne{top:-5px;right:-5px;width:20px;height:20px;cursor:ne-resize}
 .rh-sw{bottom:-5px;left:-5px;width:20px;height:20px;cursor:sw-resize}
 .rh-se{bottom:-5px;right:-5px;width:20px;height:20px;cursor:se-resize}
-/* visible SE corner marker */
 .rh-se::after{
   content:'';position:absolute;bottom:5px;right:5px;
   width:11px;height:11px;
@@ -93,40 +91,52 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 }
 .rh-se:hover::after{border-color:var(--accent)}
 
-/* ── TOP drag handle (thin, sits above text) ── */
+/* ── TOP drag handle — now includes collapse toggle ── */
 #ftop-drag{
-  height:20px;
-  display:flex;align-items:center;justify-content:center;
+  height:28px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 10px;
   cursor:move;
-  background:rgba(255,255,255,.04);
+  background:rgba(255,255,255,.05);
   border-radius:12px 12px 0 0;
   border-bottom:1px solid rgba(255,255,255,.07);
   flex-shrink:0;
 }
-#ftop-drag::after{
-  content:'';width:36px;height:3px;
-  border-radius:2px;background:rgba(255,255,255,.25);
+#ftop-drag .drag-bar{width:36px;height:3px;border-radius:2px;background:rgba(255,255,255,.2);pointer-events:none}
+#btn-collapse{
+  width:26px;height:26px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.6);font-size:.7rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;line-height:1;
 }
+#btn-collapse:hover{background:rgba(255,255,255,.2);color:#fff}
 
-/* ── SCRIPT TEXT (top section, grows with box height) ── */
+/* ── SCRIPT TEXT ── */
 #fscroll{
-  overflow:hidden;
-  position:relative;
-  /* height controlled by JS resize; fallback */
-  height:200px;
-  min-height:60px;
+  overflow:hidden;position:relative;
+  height:200px;min-height:60px;
 }
 #ftrack{padding:14px 20px 14px}
-#ftext{line-height:1.5;word-break:break-word;text-shadow:0 1px 10px rgba(0,0,0,.95);font-weight:500}
+#ftext{line-height:1.5;word-break:break-word;text-shadow:0 2px 12px rgba(0,0,0,1);font-weight:600}
 
-/* ── CONTROLS BAR — pinned below text ── */
+/* ── CONTROLS BAR ── */
 #fcontrols{
   flex-shrink:0;
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.45);
   border-top:1px solid rgba(255,255,255,.08);
   border-radius:0 0 12px 12px;
   padding:12px 16px;
   display:flex;flex-direction:column;gap:10px;
+  transition:all .25s ease;
+  overflow:hidden;
+}
+#fcontrols.collapsed{
+  padding:0;
+  max-height:0!important;
+  border-top:none;
+  gap:0;
 }
 /* row inside controls */
 .crow2{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -338,8 +348,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="rh rh-sw" data-dir="sw"></div>
     <div class="rh rh-se" data-dir="se"></div>
 
-    <!-- Thin drag handle at TOP -->
-    <div id="ftop-drag"></div>
+    <!-- Thin drag handle at TOP with collapse toggle -->
+    <div id="ftop-drag">
+      <div class="drag-bar"></div>
+      <button id="btn-collapse" onclick="toggleControls(event)" title="Show/hide controls">▼</button>
+    </div>
 
     <!-- SCRIPT TEXT — top of box -->
     <div id="fscroll">
@@ -447,6 +460,15 @@ function cdwn(oId,nId){
     o.classList.add('show');let c=3;n.textContent=c;
     const iv=setInterval(()=>{c--;if(c<=0){clearInterval(iv);o.classList.remove('show');r()}else n.textContent=c},1000)
   })
+}
+
+// ─── COLLAPSE/EXPAND CONTROLS ─────────────────────────
+function toggleControls(e){
+  e.stopPropagation();
+  const c=document.getElementById('fcontrols');
+  const btn=document.getElementById('btn-collapse');
+  const collapsed=c.classList.toggle('collapsed');
+  btn.textContent=collapsed?'▲':'▼';
 }
 
 // ─── FLOAT BOX: controls wiring ───────────────────────
