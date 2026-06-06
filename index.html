@@ -224,10 +224,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="brow" style="margin-top:20px">
       <button class="btn bp" onclick="lpOnly()">▶ Prompter Only</button>
       <button class="btn bd" onclick="lwCam()">📹 Record with Camera</button>
+      <button class="btn bo" onclick="popoutScript()">↗ Pop Out Script</button>
       <button class="btn bo" onclick="document.getElementById('si').value=''">🗑 Clear</button>
     </div>
     <p style="font-size:.78rem;color:var(--muted);margin-top:6px;line-height:1.7">
-      <strong style="color:var(--text)">📹 Record with Camera</strong> — drag the bar at top to move box. Drag any edge or corner to resize. Controls are below the text.
+      <strong style="color:var(--text)">📹 Record with Camera</strong> — webcam fills screen, floating script box on top.<br>
+      <strong style="color:var(--text)">↗ Pop Out Script</strong> — opens script in a separate window. Drag it beside your camera app so it's off-screen from the recording.
     </p>
   </div>
   <div id="panel-flash" class="panel">
@@ -335,6 +337,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 <script>
 // ─── HELPERS ──────────────────────────────────────────
 const isIOS=/iP(hone|od|ad)/.test(navigator.userAgent);
+const isMobile=/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 if(isIOS)document.getElementById('ios-note').style.display='block';
 let tc='#fff';
 function stc(el){document.querySelectorAll('.cs').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');tc=el.dataset.c}
@@ -556,11 +559,80 @@ function saveRec(){
   showToast();
 }
 
+// ─── POPOUT SCRIPT BOX (desktop only) ────────────────
+function popoutScript(){
+  const script=document.getElementById('si').value.trim();
+  if(!script){alert('Please enter your script first.');return}
+  const fs=document.getElementById('fsi').value;
+  const spd=document.getElementById('spdi').value;
+  const col=tc;
+  // Build a self-contained popout page
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Script – PrompterPro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#fff;font-family:'DM Sans',sans-serif;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+#scroll{flex:1;overflow:hidden;padding:20px 24px 10px}
+#text{font-size:${fs}px;line-height:1.5;color:${col};word-break:break-word;font-weight:500}
+#bar{background:rgba(0,0,0,.8);border-top:1px solid rgba(255,255,255,.1);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.b{width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.b:hover{background:rgba(255,255,255,.25)}
+.sr{display:flex;align-items:center;gap:6px;flex:1;min-width:80px}
+.sr label{font-size:.65rem;color:rgba(255,255,255,.4);white-space:nowrap}
+.sr input{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;background:#333;outline:none}
+.sr input::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#f0a500;cursor:pointer}
+.sv{font-size:.65rem;color:#f0a500;font-weight:700;min-width:14px}
+</style></head><body>
+<div id="scroll"><div id="text">${script.replace(/\n/g,'<br>').replace(/'/g,"&#39;")}</div></div>
+<div id="bar">
+  <button class="b" id="pp">▶</button>
+  <button class="b" id="rst" style="font-size:.8rem">↺</button>
+  <button class="b" id="bup" style="font-size:.8rem">↑</button>
+  <button class="b" id="bdn" style="font-size:.8rem">↓</button>
+  <div class="sr"><label>Speed</label><input type="range" id="spd" min="1" max="15" value="${spd}"><span class="sv" id="sv">${spd}</span></div>
+  <div class="sr"><label>Size</label><input type="range" id="fsr" min="20" max="120" value="${fs}"><span class="sv" id="fsv">${fs}px</span></div>
+</div>
+<script>
+let ry=0,playing=false,iv=null;
+const c=document.getElementById('scroll');
+const MULT=0.2,NUDGE=80;
+document.getElementById('spd').oninput=function(){document.getElementById('sv').textContent=this.value};
+document.getElementById('fsr').oninput=function(){document.getElementById('text').style.fontSize=this.value+'px';document.getElementById('fsv').textContent=this.value+'px'};
+function start(){stop();playing=true;document.getElementById('pp').textContent='⏸';iv=setInterval(()=>{ry+=parseFloat(document.getElementById('spd').value)*MULT;c.scrollTop=ry;if(ry>=c.scrollHeight-c.clientHeight){stop()}},16)}
+function stop(){clearInterval(iv);iv=null;playing=false;document.getElementById('pp').textContent='▶'}
+document.getElementById('pp').onclick=()=>playing?stop():start();
+document.getElementById('rst').onclick=()=>{ry=0;c.scrollTop=0;if(!playing)start()};
+document.getElementById('bup').onclick=()=>{ry=Math.max(0,ry-NUDGE);c.scrollTop=ry};
+document.getElementById('bdn').onclick=()=>{ry=Math.min(c.scrollHeight-c.clientHeight,ry+NUDGE);c.scrollTop=ry};
+c.addEventListener('wheel',function(e){e.preventDefault();ry=Math.max(0,Math.min(c.scrollHeight-c.clientHeight,ry+e.deltaY));c.scrollTop=ry},{passive:false});
+document.addEventListener('keydown',e=>{if(e.key===' '){e.preventDefault();playing?stop():start()}if(e.key==='ArrowUp'){ry=Math.max(0,ry-NUDGE);c.scrollTop=ry}if(e.key==='ArrowDown'){ry=Math.min(c.scrollHeight-c.clientHeight,ry+NUDGE);c.scrollTop=ry}});
+<\/script></body></html>`;
+  const w=window.open('','_blank','width=500,height=700,left=0,top=0,resizable=yes,scrollbars=no,toolbar=no,menubar=no,location=no,status=no');
+  if(!w){alert('Popup was blocked.\n\nPlease allow popups for this site in your browser settings, then try again.');return}
+  w.document.write(html);
+  w.document.close();
+}
+
 // ─── LAUNCH CAMERA MODE ───────────────────────────────
 async function lwCam(){
   const script=document.getElementById('si').value.trim();
   if(!script){alert('Please enter your script first.');return}
-  if(isIOS){alert('iPhone Safari cannot record webcam.\nOpening Prompter Only instead.');lpOnly();return}
+
+  // Mobile: no webcam recording support — offer popout overlay instead
+  if(isMobile){
+    const choice=confirm(
+      'On mobile, webcam recording is not supported in the browser.\n\n' +
+      'Instead, we\'ll open the script as a floating overlay.\n\n' +
+      '• Open your camera app first\n' +
+      '• Then come back here and tap OK\n' +
+      '• The script will appear as a transparent overlay\n\n' +
+      'Tap OK to continue.'
+    );
+    if(choice) lpOnly();
+    return;
+  }
+
   try{
     camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
     document.getElementById('webcam-vid').srcObject=camStream;
