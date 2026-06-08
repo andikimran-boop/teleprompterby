@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>TeleprompterByAndik</title>
+<title>PrompterByAndik</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0a0a;--surface:#141414;--border:#2a2a2a;--accent:#f0a500;--red:#e03030;--text:#f0ece4;--muted:#666;--radius:10px}
@@ -22,7 +22,7 @@ textarea::placeholder{color:var(--muted)}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin:16px 0}
 .cg{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
 .cl{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
-.cl {color:var(--accent);font-weight:600}
+.cl span{color:var(--accent);font-weight:600}
 input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer}
 .crow{display:flex;gap:8px;align-items:center;margin-top:6px}
@@ -231,7 +231,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 </head>
 <body>
 <header>
-  <div class="logo">Teleprompter<span>ByAndik</span></div>
+  <div class="logo">
+    Prompter<span>By</span>Andik
+  </div>
   <div class="mode-tabs">
     <button class="mode-tab active" onclick="swp('scroll',this)">📜 Scroll</button>
     <button class="mode-tab" onclick="swp('flash',this)">🃏 Flashcard</button>
@@ -382,7 +384,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
     <!-- CONTROLS — pinned below text -->
     <div id="fcontrols">
-      <!-- Row 1: always visible — play, nudge, rec, collapse -->
+      <!-- Row 1: always visible — play, nudge, rec, mic select, collapse -->
       <div class="crow2">
         <button class="ftb" id="btn-play">▶</button>
         <button class="ftb" id="btn-rst" style="font-size:.85rem" title="Restart">↺</button>
@@ -391,8 +393,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <button class="ftb" id="btn-rec" style="color:var(--red);font-size:.75rem;width:auto;padding:0 12px;border-radius:18px">⏺ REC</button>
         <div id="recdot"><div class="dot"></div>REC</div>
         <div id="rtimer">0:00</div>
-        <!-- Collapse toggle — lives beside REC in same row -->
         <button class="ftb" id="btn-collapse" onclick="toggleControls(event)" title="Show/hide settings" style="margin-left:auto;font-size:.75rem;width:auto;padding:0 12px;border-radius:18px;border-color:rgba(255,255,255,.4)">⚙ ▼</button>
+      </div>
+      <!-- Mic selector row — always visible -->
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:.68rem;color:rgba(255,255,255,.45);white-space:nowrap">🎙 Mic</span>
+        <select id="mic-select" style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:.75rem;padding:6px 10px;outline:none;cursor:pointer">
+          <option value="">Default microphone</option>
+        </select>
       </div>
 
       <!-- Collapsible section — rows 2, 3, 4 -->
@@ -659,6 +667,25 @@ let rtiv=null, rs=0;
 function startRTimer(){clearInterval(rtiv);rs=0;document.getElementById('rtimer').textContent='0:00';rtiv=setInterval(()=>{rs++;document.getElementById('rtimer').textContent=fmtTime(rs)},1000)}
 function stopRTimer(){clearInterval(rtiv);rtiv=null}
 
+// ─── POPULATE MIC LIST ────────────────────────────────
+async function populateMics(){
+  try{
+    // Must request audio permission first to get device labels
+    const tmp=await navigator.mediaDevices.getUserMedia({audio:true});
+    tmp.getTracks().forEach(t=>t.stop());
+    const devices=await navigator.mediaDevices.enumerateDevices();
+    const mics=devices.filter(d=>d.kind==='audioinput');
+    const sel=document.getElementById('mic-select');
+    sel.innerHTML='';
+    mics.forEach((m,i)=>{
+      const opt=document.createElement('option');
+      opt.value=m.deviceId;
+      opt.textContent=m.label||`Microphone ${i+1}`;
+      sel.appendChild(opt);
+    });
+  }catch(e){console.warn('Could not enumerate mics:',e)}
+}
+
 // ─── WEBCAM RECORDING ─────────────────────────────────
 let camStream=null, mr=null, rch=[], isrec=false;
 document.getElementById('btn-rec').addEventListener('click',()=>isrec?stopRec():startRec());
@@ -666,15 +693,11 @@ document.getElementById('btn-rec').addEventListener('click',()=>isrec?stopRec():
 async function startRec(){
   if(!camStream){alert('Camera not ready.');return}
   try{
-    const mic=await navigator.mediaDevices.getUserMedia({
-      audio:{
-        echoCancellation:false,
-        noiseSuppression:false,
-        autoGainControl:false,
-        sampleRate:44100,      // standard CD quality — most compatible
-        channelCount:1         // mono — smaller file, more compatible
-      }
-    });
+    const selectedMicId=document.getElementById('mic-select').value;
+    const audioConstraints=selectedMicId
+      ? {deviceId:{exact:selectedMicId},echoCancellation:false,noiseSuppression:false,autoGainControl:false,sampleRate:44100,channelCount:1}
+      : {echoCancellation:false,noiseSuppression:false,autoGainControl:false,sampleRate:44100,channelCount:1};
+    const mic=await navigator.mediaDevices.getUserMedia({audio:audioConstraints});
     const combined=new MediaStream([...camStream.getVideoTracks(),...mic.getAudioTracks()]);
 
     // Priority: mp4 for iOS, then webm with vp8 (better CapCut compat than vp9), then fallback
@@ -896,6 +919,7 @@ async function lwCam(){
   stopScroll();stopRTimer();rs=0;document.getElementById('rtimer').textContent='0:00';
 
   document.getElementById('rec-screen').classList.add('show');
+  populateMics(); // populate mic dropdown after camera is open
   // Don't auto-start — user presses play or REC themselves
 }
 function clrec(){
