@@ -403,7 +403,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         </select>
         <button onclick="testMic()" style="padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:.72rem;cursor:pointer;white-space:nowrap">🔊 Test</button>
       </div>
-      <!-- Mic level meter — shows when testing -->
+      <!-- Active mic confirmation -->
+      <div id="mic-active-label" style="display:none;font-size:.68rem;color:#30c060;padding:2px 0">✅ <span id="mic-active-name"></span></div>
+      <!-- Mic level meter -->
       <div id="mic-meter-wrap" style="display:none;align-items:center;gap:8px">
         <span style="font-size:.68rem;color:rgba(255,255,255,.45)">Level</span>
         <div style="flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden">
@@ -683,9 +685,16 @@ async function testMic(){
   try{
     const selectedMicId=document.getElementById('mic-select').value;
     const audioConstraints=selectedMicId
-      ? {deviceId:{exact:selectedMicId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+      ? {deviceId:{ideal:selectedMicId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}
       : {echoCancellation:false,noiseSuppression:false,autoGainControl:false};
     micTestStream=await navigator.mediaDevices.getUserMedia({audio:audioConstraints});
+
+    // Show which mic Chrome actually gave us (may differ from what was selected)
+    const track=micTestStream.getAudioTracks()[0];
+    const actualLabel=track?.label||'Unknown mic';
+    document.getElementById('mic-active-name').textContent='Chrome is using: '+actualLabel;
+    document.getElementById('mic-active-label').style.display='block';
+
     micTestAC=new AudioContext();
     const src=micTestAC.createMediaStreamSource(micTestStream);
     const analyser=micTestAC.createAnalyser();
@@ -710,6 +719,7 @@ function stopMicTest(){
   if(micTestStream)micTestStream.getTracks().forEach(t=>t.stop());
   micTestStream=null;micTestAC=null;micTestAnim=null;
   document.getElementById('mic-meter-wrap').style.display='none';
+  document.getElementById('mic-active-label').style.display='none';
   document.getElementById('mic-level-bar').style.width='0%';
 }
 
@@ -742,7 +752,7 @@ async function startRec(){
     const selectedMicId=document.getElementById('mic-select').value;
     // Don't force sampleRate — let browser use device's native rate to avoid silent audio
     const audioConstraints = selectedMicId
-      ? {deviceId:{exact:selectedMicId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+      ? {deviceId:{ideal:selectedMicId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}
       : {echoCancellation:false,noiseSuppression:false,autoGainControl:false};
     const mic=await navigator.mediaDevices.getUserMedia({audio:audioConstraints});
 
