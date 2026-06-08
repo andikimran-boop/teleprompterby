@@ -396,11 +396,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <button class="ftb" id="btn-collapse" onclick="toggleControls(event)" title="Show/hide settings" style="margin-left:auto;font-size:.75rem;width:auto;padding:0 12px;border-radius:18px;border-color:rgba(255,255,255,.4)">⚙ ▼</button>
       </div>
       <!-- Mic selector row — always visible -->
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:.68rem;color:rgba(255,255,255,.45);white-space:nowrap">🎙 Mic</span>
-        <select id="mic-select" style="flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:.75rem;padding:6px 10px;outline:none;cursor:pointer">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:.68rem;color:rgba(255,255,255,.45);white-space:nowrap">🎙</span>
+        <select id="mic-select" style="flex:1;min-width:120px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:#fff;font-size:.75rem;padding:6px 10px;outline:none;cursor:pointer">
           <option value="">Default microphone</option>
         </select>
+        <button onclick="testMic()" style="padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:.72rem;cursor:pointer;white-space:nowrap">🔊 Test</button>
+      </div>
+      <!-- Mic level meter — shows when testing -->
+      <div id="mic-meter-wrap" style="display:none;align-items:center;gap:8px">
+        <span style="font-size:.68rem;color:rgba(255,255,255,.45)">Level</span>
+        <div style="flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden">
+          <div id="mic-level-bar" style="height:100%;width:0%;background:var(--accent);border-radius:5px;transition:width .05s"></div>
+        </div>
+        <button onclick="stopMicTest()" style="padding:4px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:rgba(224,48,48,.2);color:#fff;font-size:.68rem;cursor:pointer">Stop</button>
       </div>
 
       <!-- Collapsible section — rows 2, 3, 4 -->
@@ -667,6 +676,43 @@ let rtiv=null, rs=0;
 function startRTimer(){clearInterval(rtiv);rs=0;document.getElementById('rtimer').textContent='0:00';rtiv=setInterval(()=>{rs++;document.getElementById('rtimer').textContent=fmtTime(rs)},1000)}
 function stopRTimer(){clearInterval(rtiv);rtiv=null}
 
+// ─── MIC TEST ─────────────────────────────────────────
+let micTestStream=null, micTestAC=null, micTestAnim=null;
+async function testMic(){
+  stopMicTest();
+  try{
+    const selectedMicId=document.getElementById('mic-select').value;
+    const audioConstraints=selectedMicId
+      ? {deviceId:{exact:selectedMicId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+      : {echoCancellation:false,noiseSuppression:false,autoGainControl:false};
+    micTestStream=await navigator.mediaDevices.getUserMedia({audio:audioConstraints});
+    micTestAC=new AudioContext();
+    const src=micTestAC.createMediaStreamSource(micTestStream);
+    const analyser=micTestAC.createAnalyser();
+    analyser.fftSize=256;
+    src.connect(analyser);
+    const data=new Uint8Array(analyser.frequencyBinCount);
+    document.getElementById('mic-meter-wrap').style.display='flex';
+    function draw(){
+      micTestAnim=requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(data);
+      const avg=data.reduce((a,b)=>a+b,0)/data.length;
+      const pct=Math.min(100,avg*2.5);
+      document.getElementById('mic-level-bar').style.width=pct+'%';
+      document.getElementById('mic-level-bar').style.background=pct>60?'#e03030':pct>30?'#f0a500':'#30c060';
+    }
+    draw();
+  }catch(e){alert('Could not access microphone:\n'+e.message)}
+}
+function stopMicTest(){
+  if(micTestAnim)cancelAnimationFrame(micTestAnim);
+  if(micTestAC)micTestAC.close();
+  if(micTestStream)micTestStream.getTracks().forEach(t=>t.stop());
+  micTestStream=null;micTestAC=null;micTestAnim=null;
+  document.getElementById('mic-meter-wrap').style.display='none';
+  document.getElementById('mic-level-bar').style.width='0%';
+}
+
 // ─── POPULATE MIC LIST ────────────────────────────────
 async function populateMics(){
   try{
@@ -694,29 +740,43 @@ async function startRec(){
   if(!camStream){alert('Camera not ready.');return}
   try{
     const selectedMicId=document.getElementById('mic-select').value;
-    const audioConstraints=selectedMicId
-      ? {deviceId:{exact:selectedMicId},echoCancellation:false,noiseSuppression:false,autoGainControl:false,sampleRate:44100,channelCount:1}
-      : {echoCancellation:false,noiseSuppression:false,autoGainControl:false,sampleRate:44100,channelCount:1};
+    // Don't force sampleRate — let browser use device's native rate to avoid silent audio
+    const audioConstraints = selectedMicId
+      ? {deviceId:{exact:selectedMicId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+      : {echoCancellation:false,noiseSuppression:false,autoGainControl:false};
     const mic=await navigator.mediaDevices.getUserMedia({audio:audioConstraints});
-    const combined=new MediaStream([...camStream.getVideoTracks(),...mic.getAudioTracks()]);
 
-    // Priority: mp4 for iOS, then webm with vp8 (better CapCut compat than vp9), then fallback
+    // Verify we actually got audio tracks
+    const audioTracks=mic.getAudioTracks();
+    if(audioTracks.length===0){
+      alert('No audio track captured. Please select a different microphone.');
+      return;
+    }
+
+    // Combine video + audio
+    const combined=new MediaStream([...camStream.getVideoTracks(),...audioTracks]);
+
+    // Pick best supported format
     let mime='';
     const formats=[
-      'video/mp4;codecs=avc1,mp4a.40.2',  // iOS Safari — H.264 + AAC
-      'video/mp4',                          // generic mp4
-      'video/webm;codecs=vp8,opus',         // vp8 has better CapCut support than vp9
+      'video/mp4;codecs=avc1,mp4a.40.2',
+      'video/mp4',
+      'video/webm;codecs=vp8,opus',
       'video/webm;codecs=vp9,opus',
       'video/webm'
     ];
     for(const f of formats){ if(MediaRecorder.isTypeSupported(f)){mime=f;break} }
 
-    mr = mime ? new MediaRecorder(combined,{mimeType:mime}) : new MediaRecorder(combined);
+    const opts = mime
+      ? {mimeType:mime, audioBitsPerSecond:128000, videoBitsPerSecond:2500000}
+      : {audioBitsPerSecond:128000, videoBitsPerSecond:2500000};
+    mr = new MediaRecorder(combined, opts);
     rch=[];
     mr.ondataavailable=e=>{if(e.data.size>0)rch.push(e.data)};
     mr.onstop=saveRec;
 
-    // Countdown THEN start recording + scroll together
+    // Countdown THEN start
+    stopMicTest(); // stop test if running
     if(gon('tcd'))await cdwn('cdo','cdn');
 
     mr.start(500);
@@ -725,7 +785,7 @@ async function startRec(){
     document.getElementById('recdot').classList.add('show');
     startRTimer();
     if(!rplaying)startScroll();
-  }catch(e){alert('Could not start recording:\n\n'+e.message+'\n\nMake sure microphone access is allowed.')}
+  }catch(e){alert('Could not start recording:\n\n'+e.message+'\n\nCheck microphone permission in browser settings.')}
 }
 function stopRec(){
   if(mr&&mr.state!=='inactive')mr.stop();
